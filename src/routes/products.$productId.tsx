@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal } from "@/components/site/reveal";
-import { getProduct, getSupplier, products, inr } from "@/lib/data";
+import { getProduct, getSupplier, products, inr, type Product } from "@/lib/data";
 import { useCart } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/products/$productId")({
 });
 
 function ProductDetail() {
-  const { product } = Route.useLoaderData();
+  const { product } = Route.useLoaderData() as { product: Product };
   const supplier = getSupplier(product.supplierId)!;
   const [active, setActive] = React.useState(0);
   const [colour, setColour] = React.useState(product.colors[0]?.name ?? "");
