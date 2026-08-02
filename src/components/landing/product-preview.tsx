@@ -118,12 +118,12 @@ function BuyerPreview() {
         <div className="rounded-2xl border border-border bg-surface p-6">
           <p className="text-sm font-semibold">Order timeline · LM-48213</p>
           <ol className="mt-6 space-y-5">
-            {[
+            {([
               ["Purchase order confirmed", "12 Jul · Arvind Weaving House"],
               ["Yarn dyed and loaded", "16 Jul · Lot AW-2211"],
               ["Quality inspection passed", "23 Jul · 4-point system, 0 defects"],
               ["In transit to Tiruppur", "ETA 29 Jul"],
-            ].map(([title, meta], i) => (
+            ] as [string, string][]).map(([title, meta], i) => (
               <li key={title} className="flex gap-4">
                 <span className="relative mt-1 flex flex-col items-center">
                   <span
@@ -168,11 +168,11 @@ function BuyerPreview() {
         <div className="rounded-2xl border border-border bg-surface p-6">
           <p className="text-sm font-semibold">Saved suppliers</p>
           <ul className="mt-4 space-y-3.5">
-            {[
+            {([
               ["Arvind Weaving House", "Ahmedabad · 2h response"],
               ["Baltic Linen Works", "Vilnius · 6h response"],
               ["Milano Lana Tessuti", "Biella · 8h response"],
-            ].map(([n, m]) => (
+            ] as [string, string][]).map(([n, m]) => (
               <li key={n} className="flex items-center gap-3">
                 <span className="grid size-8 place-items-center rounded-full bg-accent text-[0.65rem] font-bold text-primary">
                   {n.slice(0, 2).toUpperCase()}
@@ -221,14 +221,14 @@ function SupplierPreview() {
       <div className="rounded-2xl border border-border bg-surface p-6">
         <p className="text-sm font-semibold">Incoming purchase orders</p>
         <div className="mt-5 space-y-2.5">
-          {[
+          {([
             ["LM-48219", "Nordvelt Apparel", "2,400 m", 508800, "Pending"],
             ["LM-48214", "Kestrel & Co.", "1,200 m", 427200, "Pending"],
             ["LM-48201", "Maison Cera", "800 m", 593600, "Accepted"],
             ["LM-48188", "Lumen Apparel", "5,000 m", 1340000, "Accepted"],
-          ].map(([id, buyer, qty, value, stage]) => (
+          ] as [string, string, string, number, string][]).map(([id, buyer, qty, value, stage]) => (
             <div
-              key={id as string}
+              key={id}
               className="flex items-center gap-4 rounded-xl border border-border px-4 py-3.5 transition-colors hover:bg-accent"
             >
               <span className="w-20 shrink-0 font-mono text-xs text-subtle">{id}</span>
@@ -236,7 +236,7 @@ function SupplierPreview() {
                 <span className="block truncate text-sm font-medium">{buyer}</span>
                 <span className="block text-xs text-muted-foreground">{qty}</span>
               </span>
-              <span className="hidden text-sm font-semibold sm:block">{inr(value as number)}</span>
+              <span className="hidden text-sm font-semibold sm:block">{inr(value)}</span>
               <span
                 className={cn(
                   "shrink-0 rounded-full px-2.5 py-1 text-[0.68rem] font-semibold",

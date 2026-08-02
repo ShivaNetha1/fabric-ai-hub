@@ -137,12 +137,12 @@ export function SourcingMap() {
         </svg>
 
         <div className="relative mt-8 grid gap-6 border-t border-border pt-8 sm:grid-cols-4">
-          {[
+          {([
             ["48", "Countries with active mills"],
             ["11 days", "Median lead time"],
             ["98.2%", "On-time delivery"],
             ["4.9 / 5", "Average supplier rating"],
-          ].map(([v, l]) => (
+          ] as [string, string][]).map(([v, l]) => (
             <div key={l}>
               <p className="text-2xl font-semibold tracking-tight">{v}</p>
               <p className="mt-1 text-xs text-muted-foreground">{l}</p>
