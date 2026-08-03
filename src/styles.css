@@ -196,6 +196,93 @@
   border: 1px solid var(--border);
 }
 
+/* Low-contrast warp/weft texture for textile-led surfaces. */
+@utility textile-weave {
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 11px,
+      color-mix(in oklab, var(--foreground) 6.5%, transparent) 11px,
+      color-mix(in oklab, var(--foreground) 6.5%, transparent) 12px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 11px,
+      color-mix(in oklab, var(--foreground) 5.5%, transparent) 11px,
+      color-mix(in oklab, var(--foreground) 5.5%, transparent) 12px
+    );
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 76% 72% at 50% 38%, #000 10%, transparent 84%);
+  mix-blend-mode: multiply;
+  opacity: 0.92;
+  transform: rotate(-4deg) scale(1.08);
+  animation: textile-weave-drift 42s linear infinite;
+}
+
+@utility textile-shuttle {
+  pointer-events: none;
+  width: 140%;
+  height: 16rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    100deg,
+    transparent 12%,
+    color-mix(in oklab, var(--cyan) 24%, transparent) 44%,
+    color-mix(in oklab, var(--violet) 20%, transparent) 56%,
+    transparent 88%
+  );
+  filter: blur(16px);
+  mask-image: radial-gradient(ellipse 70% 100% at 50% 50%, #000 15%, transparent 85%);
+  opacity: 0.52;
+  transform: rotate(-8deg);
+  animation: textile-shuttle-drift 18s ease-in-out infinite;
+}
+
+@utility textile-thread {
+  pointer-events: none;
+  width: 24rem;
+  border-radius: 999px;
+  filter: blur(18px);
+  mix-blend-mode: multiply;
+  opacity: 0.38;
+  transform: rotate(25deg);
+  animation: textile-thread-sweep 32s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@utility textile-thread-primary {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--primary) 48%, transparent) 48%,
+    transparent
+  );
+}
+
+@utility textile-thread-cyan {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--cyan) 42%, transparent) 48%,
+    transparent
+  );
+  animation-delay: -11s;
+  animation-duration: 38s;
+}
+
+@utility textile-thread-violet {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--violet) 38%, transparent) 48%,
+    transparent
+  );
+  animation-delay: -23s;
+  animation-duration: 44s;
+}
+
 /* Animated gradient ring used on AI surfaces and category chips */
 @utility gradient-ring {
   position: relative;
@@ -262,6 +349,36 @@
   }
 }
 
+@keyframes textile-weave-drift {
+  0%,
+  100% {
+    background-position: 0 0, 0 0;
+  }
+  50% {
+    background-position: 32px -20px, -24px 32px;
+  }
+}
+
+@keyframes textile-shuttle-drift {
+  0%,
+  100% {
+    translate: -8% -10%;
+  }
+  50% {
+    translate: 8% 10%;
+  }
+}
+
+@keyframes textile-thread-sweep {
+  0%,
+  100% {
+    translate: -34% 0;
+  }
+  50% {
+    translate: 34% 0;
+  }
+}
+
 @keyframes shimmer-pan {
   to {
     background-position: -220% 0;
@@ -290,10 +407,62 @@
   }
 }
 
+@keyframes yarn-flow-forward {
+  to {
+    stroke-dashoffset: -200;
+  }
+}
+
+@keyframes yarn-flow-backward {
+  to {
+    stroke-dashoffset: 200;
+  }
+}
+
+@keyframes thread-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(15px) rotate(0.5deg);
+  }
+}
+
+@keyframes thread-float-reverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(-0.5deg);
+  }
+}
+
+.allow-animation {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.animate-yarn-1 {
+  animation: yarn-flow-forward 80s linear infinite, thread-float 28s ease-in-out infinite;
+}
+.animate-yarn-2 {
+  animation: yarn-flow-backward 90s linear infinite, thread-float-reverse 34s ease-in-out infinite;
+}
+.animate-yarn-3 {
+  animation: yarn-flow-forward 70s linear infinite, thread-float 24s ease-in-out infinite;
+}
+.animate-yarn-4 {
+  animation: yarn-flow-backward 100s linear infinite, thread-float-reverse 38s ease-in-out infinite;
+}
+.animate-yarn-5 {
+  animation: yarn-flow-forward 85s linear infinite, thread-float 32s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *:not(.allow-animation),
+  *:not(.allow-animation)::before,
+  *:not(.allow-animation)::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;

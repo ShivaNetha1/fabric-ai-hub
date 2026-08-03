@@ -1,6 +1,6 @@
 import * as React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { motion, AnimatePresence } from "motion/react";
 import { ArrowRight, Building2, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Logo } from "@/components/site/logo";
 import { MeshBackground } from "@/components/site/mesh-background";
 import { fabricImages } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -23,10 +25,88 @@ export const Route = createFileRoute("/auth")({
 });
 
 function Auth() {
+  const navigate = useNavigate();
+  const [isSignUp, setIsSignUp] = React.useState(false);
   const [role, setRole] = React.useState<"Buyer" | "Supplier">("Buyer");
   const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [fullName, setFullName] = React.useState("");
+  const [companyName, setCompanyName] = React.useState("");
   const [touched, setTouched] = React.useState(false);
-  const valid = /\S+@\S+\.\S+/.test(email);
+  const [loading, setLoading] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState("");
+
+  const validEmail = /\S+@\S+\.\S+/.test(email);
+  const validForm = isSignUp
+    ? validEmail && password.length >= 6 && fullName.trim() !== "" && companyName.trim() !== ""
+    : validEmail && password.length >= 6;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched(true);
+    if (!validForm) {
+      if (password.length < 6) {
+        toast.error("Password must be at least 6 characters.");
+      }
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      if (isSignUp) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              role: role.toLowerCase(),
+              full_name: fullName,
+              company_name: companyName,
+            },
+          },
+        });
+
+        if (error) throw error;
+
+        if (data.session) {
+          toast.success("Account created and signed in!");
+          navigate({ to: role === "Buyer" ? "/dashboard/buyer" : "/dashboard/supplier" });
+        } else {
+          toast.success("Verification email sent! Please check your inbox.");
+          setIsSignUp(false);
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        // Fetch user profile to route correctly
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user?.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        toast.success("Signed in successfully!");
+        navigate({
+          to: profileData.role === "supplier" ? "/dashboard/supplier" : "/dashboard/buyer",
+        });
+      }
+    } catch (err: any) {
+      const message = err.message || "Authentication failed.";
+      setErrorMsg(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -50,8 +130,12 @@ function Auth() {
           className="glass-strong relative w-full max-w-md rounded-3xl p-9 shadow-lift"
         >
           <Logo />
-          <h1 className="mt-8 text-2xl font-semibold tracking-[-0.03em]">Welcome back</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Sign in to your sourcing workspace.</p>
+          <h1 className="mt-8 text-2xl font-semibold tracking-[-0.03em]">
+            {isSignUp ? "Create an account" : "Welcome back"}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {isSignUp ? "Sign up to start B2B sourcing." : "Sign in to your sourcing workspace."}
+          </p>
 
           <div className="mt-7 grid grid-cols-2 gap-2 rounded-full border border-border bg-surface p-1">
             {(["Buyer", "Supplier"] as const).map((r) => (
@@ -75,13 +159,46 @@ function Auth() {
             ))}
           </div>
 
-          <form
-            className="mt-7 space-y-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setTouched(true);
-            }}
-          >
+          <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
+            <AnimatePresence initial={false}>
+              {isSignUp && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4 overflow-hidden"
+                >
+                  <div>
+                    <Label htmlFor="fullName">Full name</Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Ananya Rao"
+                      className="mt-2 h-11 rounded-xl"
+                      required={isSignUp}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="companyName">
+                      {role === "Buyer" ? "Company name" : "Mill name"}
+                    </Label>
+                    <Input
+                      id="companyName"
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder={role === "Buyer" ? "Nordvelt Apparel" : "Kanchi Silk Mills"}
+                      className="mt-2 h-11 rounded-xl"
+                      required={isSignUp}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div>
               <Label htmlFor="email">Work email</Label>
               <Input
@@ -92,23 +209,39 @@ function Auth() {
                 onBlur={() => setTouched(true)}
                 placeholder="you@company.com"
                 className="mt-2 h-11 rounded-xl"
-                aria-invalid={touched && !valid}
+                aria-invalid={touched && !validEmail}
+                required
               />
-              {touched && !valid ? (
+              {touched && !validEmail ? (
                 <p className="mt-1.5 text-xs text-destructive">Enter a valid work email address.</p>
               ) : null}
             </div>
+
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="••••••••••" className="mt-2 h-11 rounded-xl" />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••"
+                className="mt-2 h-11 rounded-xl"
+                required
+                minLength={6}
+              />
             </div>
-            <Button size="lg" className="w-full" type="submit" asChild={valid}>
-              {valid ? (
-                <Link to={role === "Buyer" ? "/dashboard/buyer" : "/dashboard/supplier"}>
-                  Continue as {role} <ArrowRight />
-                </Link>
+
+            {errorMsg && (
+              <p className="text-xs text-destructive">{errorMsg}</p>
+            )}
+
+            <Button size="lg" className="w-full" type="submit" disabled={loading}>
+              {loading ? (
+                <span>Loading...</span>
               ) : (
-                <span>Continue as {role}</span>
+                <span className="flex items-center gap-1.5">
+                  {isSignUp ? "Sign Up" : "Continue"} as {role} <ArrowRight className="size-4" />
+                </span>
               )}
             </Button>
           </form>
@@ -118,14 +251,21 @@ function Auth() {
           </div>
           <div className="grid grid-cols-2 gap-2">
             {["Google", "Microsoft"].map((p) => (
-              <Button key={p} variant="outline" className="h-11">{p}</Button>
+              <Button key={p} variant="outline" className="h-11" onClick={() => toast.info(`${p} OAuth integration is a prototype.`)}>{p}</Button>
             ))}
           </div>
+
           <p className="mt-7 text-center text-xs text-muted-foreground">
-            New to Loomly?{" "}
-            <Link to="/onboarding" className="font-medium text-primary hover:underline">
-              Start AI onboarding
-            </Link>
+            {isSignUp ? "Already have an account?" : "New to Loomly?"}{" "}
+            <button
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setErrorMsg("");
+              }}
+              className="font-medium text-primary hover:underline"
+            >
+              {isSignUp ? "Sign in instead" : "Create an account"}
+            </button>
           </p>
         </motion.div>
       </div>

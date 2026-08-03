@@ -15,7 +15,10 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as DashboardBuyerRouteImport } from './routes/dashboard.buyer'
+import { Route as DashboardSupplierRouteImport } from './routes/dashboard.supplier'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
+import { Route as SuppliersSupplierIdRouteImport } from './routes/suppliers.$supplierId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -47,9 +50,24 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardBuyerRoute = DashboardBuyerRouteImport.update({
+  id: '/dashboard/buyer',
+  path: '/dashboard/buyer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSupplierRoute = DashboardSupplierRouteImport.update({
+  id: '/dashboard/supplier',
+  path: '/dashboard/supplier',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
   id: '/products/$productId',
   path: '/products/$productId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuppliersSupplierIdRoute = SuppliersSupplierIdRouteImport.update({
+  id: '/suppliers/$supplierId',
+  path: '/suppliers/$supplierId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -60,7 +78,10 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/marketplace': typeof MarketplaceRoute
   '/onboarding': typeof OnboardingRoute
+  '/dashboard/buyer': typeof DashboardBuyerRoute
+  '/dashboard/supplier': typeof DashboardSupplierRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,7 +90,10 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/marketplace': typeof MarketplaceRoute
   '/onboarding': typeof OnboardingRoute
+  '/dashboard/buyer': typeof DashboardBuyerRoute
+  '/dashboard/supplier': typeof DashboardSupplierRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,7 +103,10 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/marketplace': typeof MarketplaceRoute
   '/onboarding': typeof OnboardingRoute
+  '/dashboard/buyer': typeof DashboardBuyerRoute
+  '/dashboard/supplier': typeof DashboardSupplierRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,7 +117,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/marketplace'
     | '/onboarding'
+    | '/dashboard/buyer'
+    | '/dashboard/supplier'
     | '/products/$productId'
+    | '/suppliers/$supplierId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -99,7 +129,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/marketplace'
     | '/onboarding'
+    | '/dashboard/buyer'
+    | '/dashboard/supplier'
     | '/products/$productId'
+    | '/suppliers/$supplierId'
   id:
     | '__root__'
     | '/'
@@ -108,7 +141,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/marketplace'
     | '/onboarding'
+    | '/dashboard/buyer'
+    | '/dashboard/supplier'
     | '/products/$productId'
+    | '/suppliers/$supplierId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,7 +154,10 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   MarketplaceRoute: typeof MarketplaceRoute
   OnboardingRoute: typeof OnboardingRoute
+  DashboardBuyerRoute: typeof DashboardBuyerRoute
+  DashboardSupplierRoute: typeof DashboardSupplierRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
+  SuppliersSupplierIdRoute: typeof SuppliersSupplierIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,11 +204,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/buyer': {
+      id: '/dashboard/buyer'
+      path: '/dashboard/buyer'
+      fullPath: '/dashboard/buyer'
+      preLoaderRoute: typeof DashboardBuyerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/supplier': {
+      id: '/dashboard/supplier'
+      path: '/dashboard/supplier'
+      fullPath: '/dashboard/supplier'
+      preLoaderRoute: typeof DashboardSupplierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/$productId': {
       id: '/products/$productId'
       path: '/products/$productId'
       fullPath: '/products/$productId'
       preLoaderRoute: typeof ProductsProductIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suppliers/$supplierId': {
+      id: '/suppliers/$supplierId'
+      path: '/suppliers/$supplierId'
+      fullPath: '/suppliers/$supplierId'
+      preLoaderRoute: typeof SuppliersSupplierIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -182,8 +242,21 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   MarketplaceRoute: MarketplaceRoute,
   OnboardingRoute: OnboardingRoute,
+  DashboardBuyerRoute: DashboardBuyerRoute,
+  DashboardSupplierRoute: DashboardSupplierRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
+  SuppliersSupplierIdRoute: SuppliersSupplierIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

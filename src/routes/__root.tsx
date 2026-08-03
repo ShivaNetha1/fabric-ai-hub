@@ -14,6 +14,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "@/lib/cart";
+import { AuthProvider } from "@/lib/auth-context";
 import { SiteNav } from "@/components/site/site-nav";
 import { SiteFooter } from "@/components/site/site-footer";
 import { AiAssistant } from "@/components/site/ai-assistant";
@@ -143,26 +144,28 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <ScrollProgress />
-        <SiteNav />
-        <AnimatePresence mode="wait">
-          <motion.main
-            key={pathname}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="min-h-screen"
-          >
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-          </motion.main>
-        </AnimatePresence>
-        {bare ? null : <SiteFooter />}
-        <AiAssistant />
-        <Toaster position="bottom-left" />
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <ScrollProgress />
+          <SiteNav />
+          <AnimatePresence mode="wait">
+            <motion.main
+              key={pathname}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="min-h-screen"
+            >
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+            </motion.main>
+          </AnimatePresence>
+          {bare ? null : <SiteFooter />}
+          <AiAssistant />
+          <Toaster position="bottom-left" />
+        </CartProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

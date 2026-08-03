@@ -15,6 +15,7 @@ const floatCards = [
     className: "left-[2%] top-[14%] w-52 sm:w-60",
     depth: 28,
     delay: 0.2,
+    productId: "mulberry-silk-charmeuse",
   },
   {
     image: fabricImages.linen,
@@ -24,6 +25,7 @@ const floatCards = [
     className: "right-[3%] top-[8%] w-52 sm:w-60",
     depth: -34,
     delay: 0.35,
+    productId: "european-flax-linen",
   },
   {
     image: fabricImages.wool,
@@ -33,6 +35,7 @@ const floatCards = [
     className: "bottom-[6%] left-[8%] w-48 sm:w-56",
     depth: 44,
     delay: 0.5,
+    productId: "super-130s-wool",
   },
 ];
 
@@ -130,8 +133,8 @@ export function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* Floating fabric cards — decorative depth layer */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 hidden xl:block">
+      {/* Floating fabric cards — interactive depth layer */}
+      <div className="absolute inset-0 hidden xl:block pointer-events-none">
         {floatCards.map((card) => (
           <motion.div
             key={card.title}
@@ -143,24 +146,30 @@ export function Hero() {
               rotate: card.depth > 0 ? -3 : 3,
             }}
             transition={{ duration: 1, delay: card.delay, ease: [0.16, 1, 0.3, 1] }}
-            className={`absolute ${card.className}`}
+            className={`absolute ${card.className} pointer-events-auto`}
           >
-            <div className="glass-strong overflow-hidden rounded-2xl p-2.5 shadow-lift">
-              <img
-                src={card.image}
-                alt=""
-                loading="lazy"
-                className="aspect-4/3 w-full rounded-xl object-cover"
-              />
-              <div className="px-1.5 pb-1 pt-3">
-                <p className="text-xs font-semibold">{card.title}</p>
-                <p className="mt-0.5 text-[0.68rem] text-muted-foreground">{card.meta}</p>
-                <p className="mt-2 text-sm font-semibold">
-                  {inr(card.price)}
-                  <span className="text-[0.68rem] font-normal text-subtle"> / m</span>
-                </p>
+            <Link
+              to="/products/$productId"
+              params={{ productId: card.productId }}
+              className="block"
+            >
+              <div className="glass-strong overflow-hidden rounded-2xl p-2.5 shadow-lift border border-transparent hover:border-primary/35 hover:shadow-soft transition-all duration-300 hover:scale-[1.03]">
+                <img
+                  src={card.image}
+                  alt={card.title}
+                  loading="lazy"
+                  className="aspect-4/3 w-full rounded-xl object-cover"
+                />
+                <div className="px-1.5 pb-1 pt-3">
+                  <p className="text-xs font-semibold">{card.title}</p>
+                  <p className="mt-0.5 text-[0.68rem] text-muted-foreground">{card.meta}</p>
+                  <p className="mt-2 text-sm font-semibold">
+                    {inr(card.price)}
+                    <span className="text-[0.68rem] font-normal text-subtle"> / m</span>
+                  </p>
+                </div>
               </div>
-            </div>
+            </Link>
           </motion.div>
         ))}
       </div>

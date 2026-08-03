@@ -19,12 +19,14 @@ import { Reveal } from "@/components/site/reveal";
 import { getProduct, getSupplier, products, inr, type Product } from "@/lib/data";
 import { useCart } from "@/lib/cart";
 import { cn } from "@/lib/utils";
+import { dbService } from "@/lib/db-service";
 
 export const Route = createFileRoute("/products/$productId")({
-  loader: ({ params }) => {
-    const product = getProduct(params.productId);
+  loader: async ({ params }) => {
+    const product = await dbService.getProductById(params.productId);
     if (!product) throw notFound();
-    return { product };
+    const supplier = await dbService.getSupplierById(product.supplierId) || getSupplier(product.supplierId);
+    return { product, supplier };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -44,8 +46,7 @@ export const Route = createFileRoute("/products/$productId")({
 });
 
 function ProductDetail() {
-  const { product } = Route.useLoaderData() as { product: Product };
-  const supplier = getSupplier(product.supplierId)!;
+  const { product, supplier } = Route.useLoaderData() as { product: Product; supplier: any };
   const [active, setActive] = React.useState(0);
   const [colour, setColour] = React.useState(product.colors[0]?.name ?? "");
   const [metres, setMetres] = React.useState(product.moq);

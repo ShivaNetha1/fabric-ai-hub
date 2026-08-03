@@ -9,6 +9,9 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/lib/cart";
 import { inr } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { dbService } from "@/lib/db-service";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -30,8 +33,67 @@ const stepsList = [
 
 function Checkout() {
   const cart = useCart();
+  const { user } = useAuth();
   const [step, setStep] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
   const total = cart.subtotal * 1.05 + 14500;
+
+  // Form states
+  const [company, setCompany] = React.useState("Nordvelt Apparel Pvt Ltd");
+  const [gstin, setGstin] = React.useState("33AABCN1429P1ZV");
+  const [address, setAddress] = React.useState("Plot 42, Textile Park Road");
+  const [city, setCity] = React.useState("Tiruppur");
+  const [pincode, setPincode] = React.useState("641604");
+
+  const handlePlaceOrder = async () => {
+    if (cart.lines.length === 0) {
+      toast.error("Your cart is empty.");
+      return;
+    }
+
+    if (!user) {
+      toast.info("Proceeding as guest prototype. Sign in to save purchase orders.");
+      cart.clear();
+      setStep(2);
+      return;
+    }
+
+    setLoading(false);
+    try {
+      const shippingAddress = `${address}, ${city}, PIN: ${pincode} (GSTIN: ${gstin})`;
+      
+      for (const item of cart.detailed) {
+        await dbService.createOrder({
+          buyerId: user.id,
+          supplierId: item.product.supplierId,
+          productId: item.product.id,
+          productName: item.product.name,
+          colour: item.line.colour,
+          qty: item.line.metres,
+          unitPrice: item.product.pricePerMetre,
+          totalAmount: item.product.pricePerMetre * item.line.metres,
+          shippingAddress,
+        });
+      }
+
+      await cart.clear();
+      toast.success("All purchase orders raised successfully!");
+      setStep(2);
+    } catch (err: any) {
+      console.error("Error creating orders:", err);
+      toast.error(err.message || "Failed to raise purchase orders.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNext = async () => {
+    if (step === 0) {
+      setStep(1);
+    } else if (step === 1) {
+      await handlePlaceOrder();
+    }
+  };
 
   return (
     <div className="mx-auto max-w-[76rem] px-6 pb-24 pt-32">
@@ -68,11 +130,26 @@ function Checkout() {
         >
           {step === 0 ? (
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Company" defaultValue="Nordvelt Apparel Pvt Ltd" />
-              <Field label="GSTIN" defaultValue="33AABCN1429P1ZV" />
-              <Field label="Delivery address" defaultValue="Plot 42, Textile Park Road" className="sm:col-span-2" />
-              <Field label="City" defaultValue="Tiruppur" />
-              <Field label="PIN code" defaultValue="641604" />
+              <div>
+                <Label htmlFor="company">Company</Label>
+                <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} className="mt-2 h-11 rounded-xl" />
+              </div>
+              <div>
+                <Label htmlFor="gstin">GSTIN</Label>
+                <Input id="gstin" value={gstin} onChange={(e) => setGstin(e.target.value)} className="mt-2 h-11 rounded-xl" />
+              </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor="address">Delivery address</Label>
+                <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} className="mt-2 h-11 rounded-xl" />
+              </div>
+              <div>
+                <Label htmlFor="city">City</Label>
+                <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} className="mt-2 h-11 rounded-xl" />
+              </div>
+              <div>
+                <Label htmlFor="pincode">PIN code</Label>
+                <Input id="pincode" value={pincode} onChange={(e) => setPincode(e.target.value)} className="mt-2 h-11 rounded-xl" />
+              </div>
               <div className="sm:col-span-2 rounded-xl border border-border bg-surface p-5">
                 <p className="flex items-center gap-2 text-sm font-medium"><Truck className="size-4 text-primary" /> Consolidated freight</p>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
@@ -107,9 +184,9 @@ function Checkout() {
               >
                 <Check className="size-6 text-success-foreground" />
               </motion.span>
-              <h2 className="mt-6 text-xl font-semibold">Purchase order LM-48231 raised</h2>
+              <h2 className="mt-6 text-xl font-semibold">Purchase order raised</h2>
               <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-                Both mills have been notified. You'll get an acceptance confirmation within their
+                The respective mills have been notified. You'll get an acceptance confirmation within their
                 stated response windows, and funds stay in escrow until inspection passes.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -122,8 +199,8 @@ function Checkout() {
           {step < 2 ? (
             <div className="mt-8 flex justify-between">
               <Button variant="ghost" disabled={step === 0} onClick={() => setStep((s) => s - 1)}>Back</Button>
-              <Button onClick={() => setStep((s) => s + 1)}>
-                {step === 0 ? "Continue to payment" : "Place purchase order"}
+              <Button onClick={handleNext} disabled={loading}>
+                {loading ? "Processing..." : (step === 0 ? "Continue to payment" : "Place purchase order")}
               </Button>
             </div>
           ) : null}
@@ -133,7 +210,7 @@ function Checkout() {
           <h2 className="text-base font-semibold">Order</h2>
           <ul className="mt-5 space-y-4">
             {cart.detailed.map(({ line, product }) => (
-              <li key={line.productId} className="flex gap-3">
+              <li key={line.productId + "-" + line.colour} className="flex gap-3">
                 <img src={product.image} alt="" loading="lazy" className="size-12 rounded-lg object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{product.name}</p>

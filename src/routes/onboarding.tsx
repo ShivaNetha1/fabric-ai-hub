@@ -7,6 +7,9 @@ import { Progress } from "@/components/ui/progress";
 import { MeshBackground } from "@/components/site/mesh-background";
 import { Logo } from "@/components/site/logo";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -29,10 +32,46 @@ const steps = [
 ];
 
 function Onboarding() {
+  const { user } = useAuth();
   const [step, setStep] = React.useState(0);
   const [answers, setAnswers] = React.useState<string[]>([]);
   const done = step >= steps.length;
   const current = steps[step];
+
+  const savePreferences = React.useCallback(async (ans: string[]) => {
+    if (!user) {
+      // Save locally if guest so we can restore later
+      localStorage.setItem("loomly_guest_onboarding", JSON.stringify(ans));
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("buyers").upsert({
+        id: user.id,
+        industry: ans[0],
+        business_type: ans[1],
+        typical_budget: ans[2],
+        preferred_materials: [ans[3]],
+        typical_volume: ans[4],
+      });
+
+      if (error) throw error;
+      toast.success("Sourcing preferences saved to your profile!");
+    } catch (err: any) {
+      console.error("Error saving buyer preferences:", err.message);
+      toast.error("Failed to sync preferences to account.");
+    }
+  }, [user]);
+
+  const handleSelect = async (option: string) => {
+    const nextAnswers = [...answers, option];
+    setAnswers(nextAnswers);
+    setStep((s) => s + 1);
+
+    if (step + 1 >= steps.length) {
+      await savePreferences(nextAnswers);
+    }
+  };
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-28">
@@ -69,10 +108,10 @@ function Onboarding() {
                   className="text-center"
                 >
                   <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 220, damping: 16 }}
-                    className="mx-auto grid size-14 place-items-center rounded-2xl bg-gradient-ai"
+                     initial={{ scale: 0 }}
+                     animate={{ scale: 1 }}
+                     transition={{ type: "spring", stiffness: 220, damping: 16 }}
+                     className="mx-auto grid size-14 place-items-center rounded-2xl bg-gradient-ai"
                   >
                     <Check className="size-6 text-primary-foreground" />
                   </motion.span>
@@ -106,10 +145,7 @@ function Onboarding() {
                     {current?.options.map((o) => (
                       <button
                         key={o}
-                        onClick={() => {
-                          setAnswers((a) => [...a, o]);
-                          setStep((s) => s + 1);
-                        }}
+                        onClick={() => handleSelect(o)}
                         className={cn(
                           "rounded-xl border border-border bg-surface px-4 py-3.5 text-left text-sm font-medium transition-all duration-300",
                           "hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft",
