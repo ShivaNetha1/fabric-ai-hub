@@ -1,9 +1,10 @@
 import * as React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion, useMotionValueEvent, useScroll, AnimatePresence } from "motion/react";
-import { Menu, Search, ShoppingBag, X, LayoutGrid, Factory, ChevronDown } from "lucide-react";
+import { Menu, Search, ShoppingBag, X, LayoutGrid, Factory, ChevronDown, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 
@@ -30,6 +31,7 @@ export function SiteNav() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const last = React.useRef(0);
   const cart = useCart();
+  const { user, profile } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   React.useEffect(() => {
@@ -83,7 +85,7 @@ export function SiteNav() {
             </button>
           ))}
           <NavLink to="/suppliers/arvind-weaves">Suppliers</NavLink>
-          <NavLink to="/onboarding">AI Onboarding</NavLink>
+          <NavLink to="/onboarding">Onboarding</NavLink>
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
@@ -92,19 +94,39 @@ export function SiteNav() {
               <Search />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" asChild aria-label={`Cart, ${cart.count} items`}>
-            <Link to="/cart" className="relative">
-              <ShoppingBag />
-              {cart.count > 0 ? (
-                <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-primary text-[0.6rem] font-bold text-primary-foreground">
-                  {cart.count}
-                </span>
-              ) : null}
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
-            <Link to="/auth">Sign in</Link>
-          </Button>
+          {profile?.role !== "supplier" ? (
+            <Button variant="ghost" size="icon" asChild aria-label={`Cart, ${cart.count} items`}>
+              <Link to="/cart" className="relative">
+                <ShoppingBag />
+                {cart.count > 0 ? (
+                  <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-primary text-[0.6rem] font-bold text-primary-foreground">
+                    {cart.count}
+                  </span>
+                ) : null}
+              </Link>
+            </Button>
+          ) : null}
+          {user ? (
+            <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
+              <Link
+                to={
+                  profile?.role === "supplier"
+                    ? "/dashboard/supplier"
+                    : profile?.role === "buyer"
+                      ? "/dashboard/buyer"
+                      : "/onboarding"
+                }
+                className="gap-1.5"
+              >
+                <User className="size-3.5 text-primary" />
+                <span className="max-w-[100px] truncate">{profile?.full_name || user.email}</span>
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
+              <Link to="/auth" search={{ mode: "signup" }}>Sign up</Link>
+            </Button>
+          )}
           <Button size="sm" asChild className="hidden sm:inline-flex">
             <Link to="/marketplace">Explore marketplace</Link>
           </Button>
@@ -170,7 +192,7 @@ export function SiteNav() {
                 { label: "Inventory", to: "/inventory" },
                 { label: "Orders", to: "/orders" },
                 { label: "Supplier profile", to: "/suppliers/arvind-weaves" },
-                { label: "AI onboarding", to: "/onboarding" },
+                { label: "Onboarding", to: "/onboarding" },
               ].map((i) => (
                 <Link
                   key={i.to}
@@ -182,9 +204,25 @@ export function SiteNav() {
               ))}
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <Button variant="outline" asChild>
-                <Link to="/auth">Sign in</Link>
-              </Button>
+              {user ? (
+                <Button variant="outline" asChild>
+                  <Link
+                    to={
+                      profile?.role === "supplier"
+                        ? "/dashboard/supplier"
+                        : profile?.role === "buyer"
+                          ? "/dashboard/buyer"
+                          : "/onboarding"
+                    }
+                  >
+                    Profile
+                  </Link>
+                </Button>
+              ) : (
+                <Button variant="outline" asChild>
+                  <Link to="/auth" search={{ mode: "signup" }}>Sign up</Link>
+                </Button>
+              )}
               <Button asChild>
                 <Link to="/marketplace">Explore</Link>
               </Button>

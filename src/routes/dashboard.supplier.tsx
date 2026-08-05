@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Building2, 
@@ -13,8 +13,11 @@ import {
   Upload, 
   User, 
   Edit3, 
-  Tag 
+  Tag,
+  AlertTriangle,
+  Layers
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -134,6 +137,7 @@ function SupplierDashboard() {
   const totalOrders = orders.length;
   const pendingOrders = orders.filter((o) => o.status === "Pending").length;
   const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  const lowStockAlerts = products.filter((p) => p.stockMetres < 1000).length;
 
   // Handle Order Status Update
   const handleUpdateStatus = async (orderId: string, status: string) => {
@@ -310,10 +314,14 @@ function SupplierDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-border bg-card/60 px-4 py-2 text-xs font-medium">
+            <Link
+              to="/suppliers/$supplierId"
+              params={{ supplierId: user.id }}
+              className="flex items-center gap-2 rounded-full border border-border bg-card/60 px-4 py-2 text-xs font-medium hover:border-primary/50 hover:bg-card/90 transition-all cursor-pointer"
+            >
               <Building2 className="size-3.5 text-primary" />
               <span>{supplier?.name || profile?.full_name || user.email}</span>
-            </div>
+            </Link>
             <Button variant="outline" size="sm" onClick={signOut}>
               Sign out
             </Button>
@@ -321,11 +329,19 @@ function SupplierDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <StatCard title="Total Revenue" value={inr(totalRevenue)} desc="Escrow funds settled" icon={TrendingUp} />
           <StatCard title="Received Orders" value={totalOrders} desc="Total volume of contracts" icon={Package} />
           <StatCard title="Average Order Value" value={inr(averageOrderValue)} desc="Consolidated PO size" icon={FileText} />
           <StatCard title="Pending Review" value={pendingOrders} desc="Action required" icon={Clock} />
+          <StatCard title="Total Products" value={products.length} desc="Items in catalog" icon={Layers} />
+          <StatCard 
+            title="Inventory Alerts" 
+            value={lowStockAlerts} 
+            desc="Low stock warnings (<1000m)" 
+            icon={AlertTriangle} 
+            className={lowStockAlerts > 0 ? "border-destructive/30 bg-destructive/5 text-destructive" : ""}
+          />
         </div>
 
         {/* Content Tabs / Main Layout */}
@@ -404,6 +420,9 @@ function SupplierDashboard() {
                       <Separator className="my-1.5" />
                       <p><strong>Item</strong>: {o.product} ({o.colour})</p>
                       <p><strong>Qty</strong>: {o.qty} m · <strong>Value</strong>: {inr(o.total)}</p>
+                      {o.shippingAddress && (
+                        <p><strong>Ship To</strong>: {o.shippingAddress}</p>
+                      )}
                       <div className="flex items-center gap-2 mt-2">
                         <span className="font-semibold">Status:</span>
                         <select 
@@ -414,7 +433,7 @@ function SupplierDashboard() {
                           <option value="Pending">Pending</option>
                           <option value="Accepted">Accepted</option>
                           <option value="Preparing">Preparing</option>
-                          <option value="Dispatch">Dispatch</option>
+                          <option value="Ready for Dispatch">Ready for Dispatch</option>
                           <option value="Completed">Completed</option>
                         </select>
                       </div>
@@ -611,13 +630,33 @@ function SupplierDashboard() {
                           <Upload className="size-4 text-subtle" />
                         )}
                       </div>
-                      <Input 
-                        value={prodImage} 
-                        onChange={(e) => setProdImage(e.target.value)} 
-                        placeholder="Public CDN Image URL or upload file..." 
-                        className="h-10 flex-1" 
-                        required 
-                      />
+                      {prodImage ? (
+                        <div className="flex-1 flex items-center justify-between h-10 px-3.5 rounded-xl border border-border bg-accent/10 min-w-0">
+                          <span className="truncate text-xs text-muted-foreground font-medium flex items-center gap-1.5 min-w-0">
+                            <span className="inline-block size-1.5 rounded-full bg-success animate-pulse shrink-0" />
+                            <span className="truncate">
+                              {prodImage.startsWith("data:") 
+                                ? "Local preview asset uploaded" 
+                                : `Uploaded: ${prodImage.split("/").pop()}`}
+                            </span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setProdImage("")}
+                            className="text-[0.7rem] font-semibold text-destructive hover:text-destructive/80 transition-colors shrink-0 ml-2"
+                          >
+                            Remove Image
+                          </button>
+                        </div>
+                      ) : (
+                        <Input 
+                          value={prodImage} 
+                          onChange={(e) => setProdImage(e.target.value)} 
+                          placeholder="Public CDN Image URL or upload file..." 
+                          className="h-10 flex-1" 
+                          required 
+                        />
+                      )}
                       <div className="relative">
                         <input 
                           type="file" 
@@ -696,9 +735,9 @@ function SupplierDashboard() {
   );
 }
 
-function StatCard({ title, value, desc, icon: Icon }: { title: string; value: string | number; desc: string; icon: any }) {
+function StatCard({ title, value, desc, icon: Icon, className }: { title: string; value: string | number; desc: string; icon: any; className?: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-soft hover-lift transition-all">
+    <div className={cn("rounded-2xl border border-border bg-card p-6 shadow-soft hover-lift transition-all", className)}>
       <div className="flex justify-between items-start">
         <span className="text-xs uppercase tracking-[0.1em] text-subtle">{title}</span>
         <Icon className="size-4 text-primary" />

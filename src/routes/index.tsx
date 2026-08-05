@@ -9,13 +9,13 @@ import { Testimonials, ClosingCta } from "@/components/landing/testimonials";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Loomly — AI Powered Textile Marketplace for Buyers & Mills" },
+      { title: "Loomly — Premium Textile Marketplace for Buyers & Mills" },
       {
         name: "description",
         content:
-          "Discover 10,400+ fabrics from 1,200 verified mills. Semantic search, live inventory, bulk ordering and AI recommendations for apparel sourcing teams.",
+          "Discover 10,400+ fabrics from 1,200 verified mills. Semantic search, live inventory, bulk ordering and smart supplier matches for apparel sourcing teams.",
       },
-      { property: "og:title", content: "Loomly — AI Powered Textile Marketplace" },
+      { property: "og:title", content: "Loomly — Premium Textile Marketplace" },
       {
         property: "og:description",
         content:
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <div className="pb-8">
-      <h1 className="sr-only">Loomly — AI powered B2B textile marketplace</h1>
+      <h1 className="sr-only">Loomly — Premium B2B textile marketplace</h1>
       <Hero />
       <LogoMarquee />
       <ProductPreview />

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { 
   Building2, 
   Clock, 
@@ -15,9 +15,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-context";
 import { dbService } from "@/lib/db-service";
+import { supabase } from "@/lib/supabase";
 import { MeshBackground } from "@/components/site/mesh-background";
 import { inr } from "@/lib/data";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/buyer")({
   head: () => ({
@@ -31,6 +33,14 @@ function BuyerDashboard() {
   const navigate = useNavigate();
   const [orders, setOrders] = React.useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = React.useState(true);
+
+  // Profile states
+  const [isViewingProfile, setIsViewingProfile] = React.useState(false);
+  const [buyerData, setBuyerData] = React.useState<any>(null);
+  const [profileName, setProfileName] = React.useState("");
+  const [companyName, setCompanyName] = React.useState("");
+  const [website, setWebsite] = React.useState("");
+  const [isSavingProfile, setIsSavingProfile] = React.useState(false);
 
   React.useEffect(() => {
     if (!loading) {
@@ -50,6 +60,24 @@ function BuyerDashboard() {
         setOrders(res);
         setOrdersLoading(false);
       });
+
+      // Load buyer profile details
+      supabase
+        .from("buyers")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            setBuyerData(data);
+            setCompanyName(data.company_name || "");
+            setWebsite(data.website || "");
+          }
+        });
+      
+      if (profile.full_name) {
+        setProfileName(profile.full_name);
+      }
     }
   }, [user, profile]);
 
@@ -66,6 +94,46 @@ function BuyerDashboard() {
   const totalSpend = orders.reduce((sum, o) => sum + o.total, 0);
   const completedOrders = orders.filter((o) => o.status === "Completed").length;
 
+  // Handle Save Profile
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingProfile(true);
+    try {
+      // 1. Update profiles table full_name
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ full_name: profileName })
+        .eq("id", user.id);
+
+      if (profileError) throw profileError;
+
+      // 2. Update buyers table company_name & website
+      const { error: buyerError } = await supabase
+        .from("buyers")
+        .upsert({
+          id: user.id,
+          company_name: companyName,
+          website: website,
+        });
+
+      if (buyerError) throw buyerError;
+
+      // Update local state
+      setBuyerData({
+        ...buyerData,
+        company_name: companyName,
+        website: website,
+      });
+
+      toast.success("Profile updated successfully!");
+      setIsViewingProfile(false);
+    } catch (err: any) {
+      toast.error("Failed to save profile: " + err.message);
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
   return (
     <div className="relative min-h-screen">
       <MeshBackground intensity="soft" />
@@ -80,10 +148,13 @@ function BuyerDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-border bg-card/60 px-4 py-2 text-xs font-medium">
+            <button
+              onClick={() => setIsViewingProfile(true)}
+              className="flex items-center gap-2 rounded-full border border-border bg-card/60 px-4 py-2 text-xs font-medium hover:border-primary/50 hover:bg-card/90 transition-all cursor-pointer"
+            >
               <User className="size-3.5 text-primary" />
-              <span>{profile?.full_name || user.email}</span>
-            </div>
+              <span>{profileName || profile?.full_name || user.email}</span>
+            </button>
             <Button variant="outline" size="sm" onClick={signOut}>
               Sign out
             </Button>
@@ -143,7 +214,7 @@ function BuyerDashboard() {
                             o.status === "Pending" && "bg-warning/15 text-warning",
                             o.status === "Accepted" && "bg-info/15 text-info",
                             o.status === "Preparing" && "bg-primary/10 text-primary",
-                            o.status === "Dispatch" && "bg-success/15 text-success",
+                            o.status === "Ready for Dispatch" && "bg-success/15 text-success",
                             o.status === "Completed" && "bg-muted-foreground/10 text-muted-foreground"
                           )}>
                             {o.status}
@@ -159,26 +230,8 @@ function BuyerDashboard() {
             )}
           </div>
 
-          {/* Sourcing Insights / AI Matches */}
+          {/* Sourcing Insights */}
           <div className="space-y-6">
-            <div className="gradient-ring rounded-3xl bg-surface p-6 sm:p-7">
-              <div className="flex items-center gap-3">
-                <span className="grid size-9 place-items-center rounded-xl bg-gradient-ai">
-                  <Sparkles className="size-4.5 text-primary-foreground" />
-                </span>
-                <div>
-                  <h3 className="text-sm font-semibold">Loom AI Sourcing Recommendations</h3>
-                  <p className="text-[0.7rem] text-subtle mt-0.5">Updated real-time</p>
-                </div>
-              </div>
-              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-                We've matched your profile with GOTS Organic Cotton Poplin from Arvind Weaves. This matches your preferred composition, with a 2-day lead time reduction on bulk orders above 1,000m.
-              </p>
-              <Button variant="ai" size="sm" className="mt-5 w-full" asChild>
-                <Link to="/marketplace">Explore Matches</Link>
-              </Button>
-            </div>
-
             {/* Certifications Escrow Info */}
             <div className="rounded-3xl border border-border bg-card p-6 sm:p-7">
               <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -197,6 +250,87 @@ function BuyerDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Buyer Profile Modal */}
+        <AnimatePresence>
+          {isViewingProfile && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm p-4 overflow-y-auto">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-lg bg-card rounded-3xl border border-border p-7 shadow-lift"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold tracking-tight">Buyer Profile</h3>
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    Buyer Workspace
+                  </span>
+                </div>
+                <Separator className="my-4" />
+
+                <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground">Full Name</label>
+                    <input 
+                      type="text"
+                      value={profileName} 
+                      onChange={(e) => setProfileName(e.target.value)} 
+                      placeholder="e.g. Rahul Sharma" 
+                      className="w-full mt-1.5 border border-border bg-background rounded-xl px-4 py-2.5 outline-none focus:border-primary/50 text-sm" 
+                      required 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground">Company Name</label>
+                    <input 
+                      type="text"
+                      value={companyName} 
+                      onChange={(e) => setCompanyName(e.target.value)} 
+                      placeholder="e.g. Arrow Apparel" 
+                      className="w-full mt-1.5 border border-border bg-background rounded-xl px-4 py-2.5 outline-none focus:border-primary/50 text-sm" 
+                      required 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground">Website</label>
+                    <input 
+                      type="url"
+                      value={website} 
+                      onChange={(e) => setWebsite(e.target.value)} 
+                      placeholder="e.g. https://arrowapparel.com" 
+                      className="w-full mt-1.5 border border-border bg-background rounded-xl px-4 py-2.5 outline-none focus:border-primary/50 text-sm" 
+                    />
+                  </div>
+
+                  <div className="rounded-2xl border border-border bg-surface p-4 space-y-3 mt-4 text-xs text-muted-foreground">
+                    <p><strong>Account Email</strong>: {user.email}</p>
+                    {buyerData?.sourcing_for && (
+                      <p><strong>Sourcing For</strong>: {buyerData.sourcing_for.join(", ")}</p>
+                    )}
+                    {buyerData?.preferred_materials && (
+                      <p><strong>Preferred Materials</strong>: {buyerData.preferred_materials.join(", ")}</p>
+                    )}
+                    {buyerData?.moq_preference && (
+                      <p><strong>MOQ Preference</strong>: {buyerData.moq_preference} metres</p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 justify-end pt-4">
+                    <Button size="lg" type="submit" disabled={isSavingProfile}>
+                      {isSavingProfile ? "Saving..." : "Save Changes"}
+                    </Button>
+                    <Button size="lg" variant="outline" type="button" onClick={() => setIsViewingProfile(false)}>
+                      Close
+                    </Button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
       </div>
     </div>

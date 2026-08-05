@@ -32,7 +32,7 @@ function Cart() {
       <div className="mt-12 grid gap-8 lg:grid-cols-[1.5fr_1fr]">
         <div className="space-y-3">
           {cart.detailed.map(({ line, product }) => (
-            <article key={line.productId} className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-5 sm:flex-row">
+            <article key={line.productId + "-" + line.colour} className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-5 sm:flex-row">
               <img src={product.image} alt={product.name} loading="lazy" className="size-28 shrink-0 rounded-xl object-cover" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-4">

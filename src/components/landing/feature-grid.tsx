@@ -14,8 +14,8 @@ import { SectionHeading, StaggerGroup, StaggerItem } from "@/components/site/rev
 const features = [
   {
     icon: Sparkles,
-    title: "AI powered discovery",
-    body: "Vector search reads composition, hand-feel and finish notes — not just keywords — to rank 10,412 fabrics against your brief.",
+    title: "Intelligent discovery",
+    body: "Semantic search reads composition, hand-feel and finish notes — not just keywords — to rank 10,412 fabrics against your brief.",
   },
   {
     icon: BadgeCheck,
@@ -49,8 +49,8 @@ const features = [
   },
   {
     icon: Wand2,
-    title: "AI recommendations",
-    body: "Your order history trains a private ranking model that surfaces substitutes before a mill runs short.",
+    title: "Smart replenishment",
+    body: "Your order history and active inventory levels automatically surface equivalent substitutes before a mill runs short.",
   },
   {
     icon: Zap,
@@ -71,11 +71,11 @@ export function FeatureGrid() {
       <StaggerGroup className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((f) => (
           <StaggerItem key={f.title}>
-            <article className="group h-full rounded-2xl border border-border bg-card p-7 hover-lift">
-              <span className="grid size-11 place-items-center rounded-xl bg-accent transition-colors duration-500 group-hover:bg-gradient-ai">
+            <article className="group h-full rounded-2xl border border-border/10 bg-card/40 p-7 backdrop-blur-md hover-lift shadow-soft transition-all duration-300">
+              <span className="grid size-11 place-items-center rounded-xl bg-accent/70 border border-border/10 transition-all duration-500 group-hover:bg-gradient-ai">
                 <f.icon className="size-5 text-primary transition-colors duration-500 group-hover:text-primary-foreground" />
               </span>
-              <h3 className="mt-6 text-base font-semibold">{f.title}</h3>
+              <h3 className="mt-6 text-base font-semibold text-foreground tracking-tight">{f.title}</h3>
               <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
             </article>
           </StaggerItem>

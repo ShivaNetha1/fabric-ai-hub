@@ -25,6 +25,24 @@ const links: [number, number][] = [
   [5, 0],
 ];
 
+// Pre-calculate the land dots once to prevent React rendering calculations on every cycle
+const landDots: { x: number; y: number }[] = [];
+for (let r = 0; r < 30; r++) {
+  for (let cIdx = 0; cIdx < 46; cIdx++) {
+    const x = 2 + cIdx * 2.15;
+    const y = 4 + r * 2.4;
+    const inLand =
+      (x > 14 && x < 34 && y > 18 && y < 44) ||
+      (x > 26 && x < 38 && y > 50 && y < 74) ||
+      (x > 40 && x < 60 && y > 18 && y < 38) ||
+      (x > 44 && x < 58 && y > 40 && y < 64) ||
+      (x > 60 && x < 90 && y > 18 && y < 58);
+    if (inLand) {
+      landDots.push({ x, y });
+    }
+  }
+}
+
 export function SourcingMap() {
   return (
     <section className="mx-auto mt-40 max-w-[88rem] px-6">
@@ -35,7 +53,7 @@ export function SourcingMap() {
         description="Live capacity from 1,200 verified suppliers across 48 countries, priced to your delivery port."
       />
 
-      <div className="relative mt-16 overflow-hidden rounded-3xl border border-border bg-card p-6 sm:p-10">
+      <div className="relative mt-16 overflow-hidden rounded-3xl border border-border/10 bg-card/40 p-6 sm:p-10 shadow-lift backdrop-blur-md">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-60"
@@ -59,29 +77,16 @@ export function SourcingMap() {
           </defs>
 
           {/* Dotted landmass grid */}
-          {Array.from({ length: 30 }).map((_, r) =>
-            Array.from({ length: 46 }).map((_, cIdx) => {
-              const x = 2 + cIdx * 2.15;
-              const y = 4 + r * 2.4;
-              const inLand =
-                (x > 14 && x < 34 && y > 18 && y < 44) ||
-                (x > 26 && x < 38 && y > 50 && y < 74) ||
-                (x > 40 && x < 60 && y > 18 && y < 38) ||
-                (x > 44 && x < 58 && y > 40 && y < 64) ||
-                (x > 60 && x < 90 && y > 18 && y < 58);
-              if (!inLand) return null;
-              return (
-                <circle
-                  key={`${r}-${cIdx}`}
-                  cx={x}
-                  cy={y}
-                  r="0.4"
-                  fill="var(--foreground)"
-                  opacity="0.12"
-                />
-              );
-            }),
-          )}
+          {landDots.map((dot, idx) => (
+            <circle
+              key={idx}
+              cx={dot.x}
+              cy={dot.y}
+              r="0.4"
+              fill="var(--foreground)"
+              opacity="0.12"
+            />
+          ))}
 
           {links.map(([a, b], i) => {
             const from = nodes[a]!;
@@ -136,15 +141,15 @@ export function SourcingMap() {
           ))}
         </svg>
 
-        <div className="relative mt-8 grid gap-6 border-t border-border pt-8 sm:grid-cols-4">
+        <div className="relative mt-8 grid gap-6 border-t border-border/10 pt-8 sm:grid-cols-4">
           {([
             ["48", "Countries with active mills"],
             ["11 days", "Median lead time"],
             ["98.2%", "On-time delivery"],
             ["4.9 / 5", "Average supplier rating"],
           ] as [string, string][]).map(([v, l]) => (
-            <div key={l}>
-              <p className="text-2xl font-semibold tracking-tight">{v}</p>
+            <div key={l} className="group cursor-default">
+              <p className="text-2xl font-semibold tracking-tight group-hover:text-primary transition-colors duration-300">{v}</p>
               <p className="mt-1 text-xs text-muted-foreground">{l}</p>
             </div>
           ))}

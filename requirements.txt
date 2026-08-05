@@ -1,0 +1,12 @@
+# ==========================================
+# LOOMLY B2B TEXTILE MARKETPLACE
+# ==========================================
+#
+# This project is a full-stack Node.js / React application built on Vinxi 
+# and TanStack Start. There are no Python dependencies required for execution.
+#
+# All package dependencies are managed via npm / package.json.
+# To run this project, execute:
+#   npm install
+#   npm run dev
+#

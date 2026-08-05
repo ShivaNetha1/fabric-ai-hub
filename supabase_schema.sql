@@ -98,7 +98,7 @@ create table public.orders (
   qty integer not null check (qty > 0),
   unit_price numeric(10,2) not null,
   total_amount numeric(10,2) not null,
-  status text check (status in ('Pending', 'Accepted', 'Preparing', 'Dispatch', 'Completed')) default 'Pending' not null,
+  status text check (status in ('Pending', 'Accepted', 'Preparing', 'Ready for Dispatch', 'Completed')) default 'Pending' not null,
   placed_at timestamptz default timezone('utc'::text, now()) not null,
   eta_date timestamptz,
   shipping_address text
@@ -173,9 +173,13 @@ create policy "Allow buyers to place orders" on public.orders
     )
   );
 
-create policy "Allow suppliers and buyers to update order statuses" on public.orders
+create policy "Allow suppliers to update order statuses" on public.orders
   for update using (
-    auth.uid() = buyer_id or auth.uid() = supplier_id
+    auth.uid() = supplier_id and 
+    exists (
+      select 1 from public.profiles 
+      where id = auth.uid() and role = 'supplier'
+    )
   );
 
 -- ==========================================
@@ -255,3 +259,117 @@ values
   ('selvedge-denim-13oz', 'Selvedge Denim 13.5 oz', 'Rope-dyed indigo · shuttle loom', 'Denim', '98% cotton · 2% elastane', '/src/assets/fabric-denim.jpg', 742.00, 400, 458, 92, '[{"name": "Raw Indigo", "hex": "#1B2A4A"}, {"name": "Washed", "hex": "#4A6491"}]'::jsonb, '11111111-1111-1111-1111-111111111111', 4.7, 132, 22, 'Low stock', '{"OEKO-TEX 100", "ISO 9001"}'::text[], false, '{"Heritage", "Shuttle loom", "Fades well"}'::text[], 'Rope-dyed on vintage shuttle looms for an authentic slubby character and clean selvedge ID. Develops high-contrast fades from month three of wear.', 3120),
   ('super-130s-wool', 'Super 130s Wool Suiting', 'Biella spun · year-round weight', 'Wool', '100% RWS merino wool', '/src/assets/fabric-wool.jpg', 2260.00, 60, 260, 152, '[{"name": "Charcoal", "hex": "#333A45"}, {"name": "Navy", "hex": "#1F2A44"}, {"name": "Grey Mélange", "hex": "#8A909B"}]'::jsonb, '44444444-4444-4444-4444-444444444444', 5.0, 74, 26, 'Made to order', '{"RWS", "ISO 14001"}'::text[], true, '{"Tailoring", "Super 130s", "Low MOQ"}'::text[], 'A four-season worsted with natural stretch recovery and a quiet lustre. Cut and sewn by tailoring houses in Naples, London and Tokyo.', 1840)
 on conflict (id) do nothing;
+
+-- ==========================================
+-- STORAGE BUCKETS SETUP & POLICIES
+-- ==========================================
+
+-- Create storage bucket if not exists
+insert into storage.buckets (id, name, public)
+values ('product-images', 'product-images', true)
+on conflict (id) do nothing;
+
+-- Enable public read access
+create policy "Allow public read access to product-images" on storage.objects
+  for select using (bucket_id = 'product-images');
+
+-- Enable uploads for authenticated users
+create policy "Allow authenticated uploads to product-images" on storage.objects
+  for insert with check (
+    bucket_id = 'product-images' and
+    auth.role() = 'authenticated'
+  );
+
+-- Enable updates for authenticated users
+create policy "Allow authenticated updates to product-images" on storage.objects
+  for update using (
+    bucket_id = 'product-images' and
+    auth.role() = 'authenticated'
+  );
+
+-- Enable deletions for authenticated users
+create policy "Allow authenticated deletions to product-images" on storage.objects
+  for delete using (
+    bucket_id = 'product-images' and
+    auth.role() = 'authenticated'
+  );
+
+-- ==========================================
+-- ORDER STATUS CONSTRAINT MIGRATION
+-- ==========================================
+
+-- Update existing orders using legacy status
+update public.orders set status = 'Ready for Dispatch' where status = 'Dispatch';
+
+-- Drop constraint if exists
+alter table public.orders drop constraint if exists orders_status_check;
+
+-- Add updated check constraint
+alter table public.orders add constraint orders_status_check check (status in ('Pending', 'Accepted', 'Preparing', 'Ready for Dispatch', 'Completed'));
+
+-- ==========================================
+-- PGVECTOR SETUP & SEMANTIC PRODUCT SEARCH
+-- ==========================================
+
+-- 1. Enable pgvector extension
+create extension if not exists vector;
+
+-- 2. Add embedding column to products table
+alter table public.products add column if not exists embedding vector(384);
+
+-- 3. Create semantic match function
+create or replace function public.match_products (
+  query_embedding vector(384),
+  match_threshold float,
+  match_count int
+)
+returns table (
+  id text,
+  name text,
+  subtitle text,
+  material text,
+  composition text,
+  image_url text,
+  price_per_metre numeric,
+  moq int,
+  gsm int,
+  width_cm int,
+  availability text,
+  certifications text[],
+  sustainable boolean,
+  tags text[],
+  description text,
+  stock_metres int,
+  supplier_id uuid,
+  similarity float
+)
+language plpgsql
+stable
+as $$
+begin
+  return query
+  select
+    p.id,
+    p.name,
+    p.subtitle,
+    p.material,
+    p.composition,
+    p.image_url,
+    p.price_per_metre,
+    p.moq,
+    p.gsm,
+    p.width_cm,
+    p.availability,
+    p.certifications,
+    p.sustainable,
+    p.tags,
+    p.description,
+    p.stock_metres,
+    p.supplier_id,
+    1 - (p.embedding <=> query_embedding) as similarity
+  from public.products p
+  where p.embedding is not null and 1 - (p.embedding <=> query_embedding) > match_threshold
+  order by p.embedding <=> query_embedding
+  limit match_count;
+end;
+$$;

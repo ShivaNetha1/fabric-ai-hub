@@ -1,6 +1,8 @@
 import { supabase } from "./supabase";
 import { products as mockProducts, suppliers as mockSuppliers, type Product, type Supplier, type Availability } from "./data";
 
+const inMemoryOrders: any[] = [];
+
 export const dbService = {
   // 1. PRODUCTS
   async getProducts(): Promise<Product[]> {
@@ -72,6 +74,12 @@ export const dbService = {
       .single();
 
     if (error) throw error;
+    
+    // Index product embedding in background
+    import("./ai-service").then(({ aiService }) => {
+      aiService.indexProduct(data.id);
+    }).catch((err) => console.error("AI product indexing trigger failed:", err));
+
     return this.mapProduct(data);
   },
 
@@ -104,6 +112,12 @@ export const dbService = {
       .single();
 
     if (error) throw error;
+    
+    // Re-index product embedding in background
+    import("./ai-service").then(({ aiService }) => {
+      aiService.indexProduct(id);
+    }).catch((err) => console.error("AI product indexing trigger failed:", err));
+
     return this.mapProduct(data);
   },
 
@@ -256,9 +270,9 @@ export const dbService = {
       if (error) throw error;
       return (data || []).map((o) => this.mapOrder(o));
     } catch (err) {
-      console.warn("Supabase fetch buyer orders failed, falling back to mock orders:", err);
+      console.warn("Supabase fetch buyer orders failed, falling back to in-memory orders:", err);
     }
-    return [];
+    return inMemoryOrders.filter((o) => o.buyerId === userId);
   },
 
   async getOrdersBySupplier(userId: string): Promise<any[]> {
@@ -272,9 +286,9 @@ export const dbService = {
       if (error) throw error;
       return (data || []).map((o) => this.mapOrder(o));
     } catch (err) {
-      console.warn("Supabase fetch supplier orders failed, falling back to mock orders:", err);
+      console.warn("Supabase fetch supplier orders failed, falling back to in-memory orders:", err);
     }
-    return [];
+    return inMemoryOrders.filter((o) => o.supplierId === userId);
   },
 
   async createOrder(orderData: {
@@ -288,39 +302,95 @@ export const dbService = {
     totalAmount: number;
     shippingAddress: string;
   }): Promise<any> {
-    const dbOrder = {
-      buyer_id: orderData.buyerId,
-      supplier_id: orderData.supplierId,
-      product_id: orderData.productId,
-      product_name: orderData.productName,
-      colour: orderData.colour,
-      qty: orderData.qty,
-      unit_price: orderData.unitPrice,
-      total_amount: orderData.totalAmount,
-      shipping_address: orderData.shippingAddress,
-      eta_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days default ETA
-    };
+    try {
+      const dbOrder = {
+        buyer_id: orderData.buyerId,
+        supplier_id: orderData.supplierId,
+        product_id: orderData.productId,
+        product_name: orderData.productName,
+        colour: orderData.colour,
+        qty: orderData.qty,
+        unit_price: orderData.unitPrice,
+        total_amount: orderData.totalAmount,
+        shipping_address: orderData.shippingAddress,
+        eta_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      };
 
-    const { data, error } = await supabase
-      .from("orders")
-      .insert(dbOrder)
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from("orders")
+        .insert(dbOrder)
+        .select()
+        .single();
 
-    if (error) throw error;
-    return this.mapOrder(data);
+      if (error) throw error;
+
+      // UPDATE INVENTORY: Deduct qty from product stock in Supabase
+      try {
+        const product = await this.getProductById(orderData.productId);
+        if (product) {
+          const newStock = Math.max(0, product.stockMetres - orderData.qty);
+          await this.updateProduct(orderData.productId, { stockMetres: newStock });
+        }
+      } catch (invErr) {
+        console.warn("Failed to update product inventory in Supabase:", invErr);
+      }
+
+      return this.mapOrder(data);
+    } catch (err) {
+      console.warn("Supabase createOrder failed, falling back to in-memory order:", err);
+      const mockOrder = {
+        id: Math.random().toString(36).substring(2, 9),
+        buyerId: orderData.buyerId,
+        supplierId: orderData.supplierId,
+        productId: orderData.productId,
+        product: orderData.productName,
+        colour: orderData.colour,
+        qty: orderData.qty,
+        total: orderData.totalAmount,
+        status: "Pending",
+        placed: new Date().toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        }),
+        eta: "ETA " + new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        }),
+      };
+      inMemoryOrders.push(mockOrder);
+
+      // Deduct stock in local mockProducts list
+      const mockProduct = mockProducts.find((p) => p.id === orderData.productId);
+      if (mockProduct) {
+        mockProduct.stockMetres = Math.max(0, mockProduct.stockMetres - orderData.qty);
+      }
+
+      return mockOrder;
+    }
   },
 
   async updateOrderStatus(orderId: string, status: string): Promise<any> {
-    const { data, error } = await supabase
-      .from("orders")
-      .update({ status })
-      .eq("id", orderId)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .update({ status })
+        .eq("id", orderId)
+        .select()
+        .single();
 
-    if (error) throw error;
-    return this.mapOrder(data);
+      if (error) throw error;
+      return this.mapOrder(data);
+    } catch (err: any) {
+      console.error("Supabase updateOrderStatus failed:", err);
+      const match = inMemoryOrders.find((o) => o.id === orderId);
+      if (match) {
+        match.status = status;
+        return match;
+      }
+      throw err;
+    }
   },
 
   // 5. MAP PERSISTENCE DTOs TO frontend interfaces
@@ -383,6 +453,7 @@ export const dbService = {
       qty: dbOrder.qty,
       total: Number(dbOrder.total_amount),
       status: dbOrder.status,
+      shippingAddress: dbOrder.shipping_address,
       placed: new Date(dbOrder.placed_at).toLocaleDateString("en-IN", {
         day: "2-digit",
         month: "short",

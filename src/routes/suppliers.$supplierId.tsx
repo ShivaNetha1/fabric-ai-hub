@@ -17,6 +17,7 @@ import { getSupplier, type Supplier, type Product } from "@/lib/data";
 import { ProductCard } from "@/components/site/product-card";
 import { MeshBackground } from "@/components/site/mesh-background";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/suppliers/$supplierId")({
   loader: async ({ params }) => {

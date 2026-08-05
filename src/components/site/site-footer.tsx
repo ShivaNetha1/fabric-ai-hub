@@ -9,7 +9,7 @@ const columns = [
       { label: "Browse fabrics", to: "/marketplace" },
       { label: "Shopping cart", to: "/cart" },
       { label: "Checkout", to: "/checkout" },
-      { label: "AI onboarding", to: "/onboarding" },
+      { label: "Onboarding", to: "/onboarding" },
     ],
   },
   {
@@ -17,7 +17,7 @@ const columns = [
     links: [
       { label: "Buyer dashboard", to: "/dashboard/buyer" },
       { label: "Order tracking", to: "/orders" },
-      { label: "Sign in", to: "/auth" },
+      { label: "Sign up", to: "/auth", search: { mode: "signup", role: "buyer" } },
       { label: "Product detail", to: "/products/organic-cotton-poplin" },
     ],
   },
@@ -27,7 +27,7 @@ const columns = [
       { label: "Supplier dashboard", to: "/dashboard/supplier" },
       { label: "Inventory manager", to: "/inventory" },
       { label: "Supplier profile", to: "/suppliers/arvind-weaves" },
-      { label: "Become a supplier", to: "/auth" },
+      { label: "Become a supplier", to: "/auth", search: { mode: "signup", role: "supplier" } },
     ],
   },
   {
@@ -89,6 +89,7 @@ export function SiteFooter() {
                     <li key={l.label}>
                       <Link
                         to={l.to}
+                        search={(l as any).search}
                         className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {l.label}

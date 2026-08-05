@@ -58,7 +58,7 @@ function Checkout() {
       return;
     }
 
-    setLoading(false);
+    setLoading(true);
     try {
       const shippingAddress = `${address}, ${city}, PIN: ${pincode} (GSTIN: ${gstin})`;
       

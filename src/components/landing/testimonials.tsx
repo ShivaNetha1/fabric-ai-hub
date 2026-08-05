@@ -15,20 +15,20 @@ export function Testimonials() {
       <StaggerGroup className="mt-16 grid gap-4 lg:grid-cols-3">
         {testimonials.map((t) => (
           <StaggerItem key={t.name}>
-            <figure className="flex h-full flex-col rounded-2xl border border-border bg-card p-8 hover-lift">
-              <blockquote className="text-[0.98rem] leading-relaxed text-foreground">
+            <figure className="flex h-full flex-col rounded-2xl border border-border/10 bg-card/40 p-8 hover-lift shadow-soft backdrop-blur-md transition-all duration-300">
+              <blockquote className="text-[0.98rem] leading-relaxed text-foreground italic">
                 “{t.quote}”
               </blockquote>
               <figcaption className="mt-auto flex items-center gap-3 pt-8">
-                <span className="grid size-10 place-items-center rounded-full bg-gradient-premium text-xs font-bold text-primary-foreground">
+                <span className="grid size-10 place-items-center rounded-full bg-gradient-premium text-xs font-bold text-primary-foreground shadow-soft">
                   {t.name
                     .split(" ")
                     .map((w) => w[0])
                     .join("")}
                 </span>
                 <span>
-                  <span className="block text-sm font-semibold">{t.name}</span>
-                  <span className="block text-xs text-muted-foreground">{t.role}</span>
+                  <span className="block text-sm font-semibold text-foreground">{t.name}</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">{t.role}</span>
                 </span>
               </figcaption>
             </figure>
@@ -43,7 +43,7 @@ export function ClosingCta() {
   return (
     <section className="mx-auto mt-40 max-w-[88rem] px-6">
       <Reveal className="max-w-none">
-        <div className="noise relative overflow-hidden rounded-[2rem] border border-border bg-foreground px-6 py-24 text-center sm:px-16">
+        <div className="noise relative overflow-hidden rounded-[2rem] border border-white/10 bg-foreground px-6 py-24 text-center sm:px-16 shadow-lift">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-80"
@@ -61,7 +61,7 @@ export function ClosingCta() {
               with our conversational setup.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Button size="xl" variant="outline" asChild>
+              <Button size="xl" variant="outline" asChild className="border-white/10 text-primary-foreground hover:bg-white/10">
                 <Link to="/onboarding">
                   Start AI onboarding <ArrowRight />
                 </Link>

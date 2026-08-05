@@ -27,12 +27,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = React.useState<CartLine[]>([]);
   const [dbProducts, setDbProducts] = React.useState<Product[]>([]);
 
+  const linesKey = lines.map((l) => l.productId).join(",");
+
   // Load products to fetch details
   React.useEffect(() => {
     dbService.getProducts().then((res) => {
       setDbProducts(res);
     });
-  }, []);
+  }, [linesKey]);
 
   // Sync cart when user signs in or out
   React.useEffect(() => {
@@ -50,12 +52,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               const duplicateIndex = dbCart.findIndex(
                 (d) => d.productId === item.productId && d.colour === item.colour
               );
-              if (duplicateIndex > -1) {
-                dbCart[duplicateIndex].metres += item.metres;
+              const duplicateItem = dbCart[duplicateIndex];
+              if (duplicateIndex > -1 && duplicateItem) {
+                duplicateItem.metres += item.metres;
                 await dbService.syncCartItem(
                   user.id,
                   item.productId,
-                  dbCart[duplicateIndex].metres,
+                  duplicateItem.metres,
                   item.colour
                 );
               } else {
@@ -75,13 +78,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (guestCartStr) {
           setLines(JSON.parse(guestCartStr));
         } else {
-          // Initialize with default demo lines
-          const defaults = [
-            { productId: "organic-cotton-poplin", metres: 1200, colour: "Ivory" },
-            { productId: "european-flax-linen", metres: 400, colour: "Sage" },
-          ];
-          setLines(defaults);
-          localStorage.setItem("loomly_guest_cart", JSON.stringify(defaults));
+          setLines([]);
         }
       }
     };
@@ -91,16 +88,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const add = React.useCallback(
     async (productId: string, metres: number, colour: string) => {
+      let finalMetres = metres;
+
       setLines((prev) => {
         let updated: CartLine[];
         const existing = prev.find((l) => l.productId === productId && l.colour === colour);
         if (existing) {
+          finalMetres = existing.metres + metres;
           updated = prev.map((l) =>
             l.productId === productId && l.colour === colour
-              ? { ...l, metres: l.metres + metres }
+              ? { ...l, metres: finalMetres }
               : l
           );
         } else {
+          finalMetres = metres;
           updated = [...prev, { productId, metres, colour }];
         }
 
@@ -111,12 +112,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (user) {
-        // Calculate new metres for db sync
-        const currentMetres = lines.find((l) => l.productId === productId && l.colour === colour)?.metres || 0;
-        await dbService.syncCartItem(user.id, productId, currentMetres + metres, colour);
+        await dbService.syncCartItem(user.id, productId, finalMetres, colour);
       }
     },
-    [user, lines]
+    [user]
   );
 
   const remove = React.useCallback(

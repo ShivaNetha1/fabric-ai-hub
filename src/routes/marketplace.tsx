@@ -1,13 +1,14 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { LayoutGrid, List, Mic, Search, Sparkles, SlidersHorizontal } from "lucide-react";
+import { LayoutGrid, List, Mic, Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { MeshBackground } from "@/components/site/mesh-background";
-import { ProductCard, ProductCardSkeleton, AiRecommendBanner } from "@/components/site/product-card";
-import { products, materials, suppliers, inr } from "@/lib/data";
+import { ProductCard, ProductCardSkeleton } from "@/components/site/product-card";
+import { dbService } from "@/lib/db-service";
+import { type Product, materials, suppliers, inr } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/marketplace")({
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/marketplace")({
       { property: "og:title", content: "Loomly Marketplace — 10,400 verified fabrics" },
       {
         property: "og:description",
-        content: "Semantic and voice search across every connected textile mill.",
+        content: "Search across every connected textile mill.",
       },
     ],
   }),
@@ -39,22 +40,37 @@ function Marketplace() {
   const [supplierIds, setSupplierIds] = React.useState<string[]>([]);
   const [sustainableOnly, setSustainableOnly] = React.useState(false);
   const [query, setQuery] = React.useState("");
+  const [productsList, setProductsList] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [visible, setVisible] = React.useState(8);
 
   React.useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 900);
-    return () => clearTimeout(t);
+    Promise.all([
+      dbService.getProducts(),
+      dbService.getSuppliers()
+    ]).then(([allProds, activeSups]) => {
+      const activeSupIds = activeSups.map((s) => s.id);
+      const filteredProds = allProds.filter((p) => activeSupIds.includes(p.supplierId));
+      setProductsList(filteredProds);
+      setLoading(false);
+    });
   }, []);
 
-  const filtered = products.filter((p) => {
+  const filtered = productsList.filter((p) => {
     if (material !== "All" && p.material !== material) return false;
     if (p.pricePerMetre > maxPrice) return false;
     if (p.moq > maxMoq) return false;
     if (supplierIds.length && !supplierIds.includes(p.supplierId)) return false;
     if (sustainableOnly && !p.sustainable) return false;
-    if (query && !`${p.name} ${p.composition} ${p.tags.join(" ")}`.toLowerCase().includes(query.toLowerCase()))
-      return false;
+    
+    if (query) {
+      const searchTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const textToSearch = `${p.name} ${p.composition} ${p.material} ${p.tags.join(" ")}`.toLowerCase();
+      // Ensure all search terms are found in the product text details
+      const matchesAllTerms = searchTerms.every((term) => textToSearch.includes(term));
+      if (!matchesAllTerms) return false;
+    }
+    
     return true;
   });
 
@@ -69,8 +85,7 @@ function Marketplace() {
             Find the exact fabric, <span className="text-gradient-premium">described your way</span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
-            Search by composition, hand-feel, certification or budget. Loom AI reads intent, not
-            keywords.
+            Search by composition, hand-feel, certification or budget. Live stock from 1,200 verified mills.
           </p>
 
           <div className="gradient-ring mx-auto mt-9 flex max-w-2xl items-center gap-2 rounded-full bg-surface p-2 pl-5 shadow-lift">
@@ -85,8 +100,8 @@ function Marketplace() {
             <Button variant="ghost" size="icon" aria-label="Voice search">
               <Mic />
             </Button>
-            <Button variant="ai" size="sm" className="shrink-0">
-              <Sparkles /> AI search
+            <Button size="sm" className="shrink-0 rounded-full px-5">
+              Search
             </Button>
           </div>
 
@@ -219,8 +234,6 @@ function Marketplace() {
                 ))}
               </div>
             </div>
-
-            <AiRecommendBanner />
 
             {loading ? (
               <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">

@@ -2,6 +2,7 @@ import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUp, Mic, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 
 interface Msg {
   role: "user" | "assistant";
@@ -15,25 +16,8 @@ const suggestions = [
   "Recommended suppliers in Italy",
 ];
 
-const canned = {
-  default:
-    "I searched 10,412 indexed fabrics across 1,200 verified mills. Three matches stand out: Organic Cotton Poplin 120 GSM at ₹212/m from Arvind Weaving House (GOTS, MOQ 300 m, 12-day lead), Hemp–Cotton Chambray at ₹356/m with 38% lower water use, and Recycled Poly Twill at ₹268/m for performance programmes. Want me to shortlist by landed cost to your Tiruppur warehouse?",
-  compare:
-    "Silk Charmeuse 19 MM is ₹1,480/m, 86 GSM, liquid drape, MOQ 100 m, 18-day lead. Silk–Cotton Voile is ₹640/m, 68 GSM, semi-sheer with cotton stability, MOQ 150 m, 16-day lead. For eveningwear choose charmeuse; for layered resort pieces the voile holds shape better after washing.",
-  moq: "Four mills accept MOQ at or below 100 m: Milano Lana (Super 130s Wool, 60 m), Kanchi Silk (Charmeuse, 100 m), Milano Lana (Herringbone Flannel, 50 m) and Kanchi Silk (Jacquard Brocade, 40 m). All four are verified with sub-8-hour response times.",
-  supplier:
-    "Milano Lana Tessuti in Biella holds a 5.0 rating across 2,210 orders, RWS and ISO 14001 certified, 8-hour median response. They specialise in Super 120s–180s worsted suiting with closed-loop finishing.",
-};
-
-function answerFor(q: string) {
-  const l = q.toLowerCase();
-  if (l.includes("compare") || l.includes("vs")) return canned.compare;
-  if (l.includes("moq")) return canned.moq;
-  if (l.includes("supplier")) return canned.supplier;
-  return canned.default;
-}
-
 export function AiAssistant() {
+  const { profile } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [input, setInput] = React.useState("");
   const [streaming, setStreaming] = React.useState(false);
@@ -49,26 +33,65 @@ export function AiAssistant() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, streaming]);
 
+  // Hide the floating chatbot completely for Suppliers
+  if (profile?.role === "supplier") {
+    return null;
+  }
+
   const send = (text: string) => {
     if (!text.trim() || streaming) return;
+    
+    // Add user message to state
     setMessages((m) => [...m, { role: "user", text }]);
     setInput("");
     setStreaming(true);
-    const full: string = answerFor(text);
-    let i = 0;
-    setMessages((m) => [...m, { role: "assistant", text: "" }]);
-    const timer = setInterval(() => {
-      i += 4;
-      setMessages((m) => {
-        const next = [...m];
-        next[next.length - 1] = { role: "assistant", text: full.slice(0, i) };
-        return next;
-      });
-      if (i >= full.length) {
-        clearInterval(timer);
+
+    // Call backend Chat endpoint
+    fetch("/api/ai/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          ...messages.map((m) => ({
+            role: m.role,
+            content: m.text,
+          })),
+          { role: "user", content: text },
+        ],
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Network error contacting Loom AI.");
+        return res.json() as Promise<{ text: string }>;
+      })
+      .then((data) => {
+        const full = data.text;
+        let i = 0;
+        setMessages((m) => [...m, { role: "assistant", text: "" }]);
+        const timer = setInterval(() => {
+          i += 4;
+          setMessages((m) => {
+            const next = [...m];
+            next[next.length - 1] = { role: "assistant", text: full.slice(0, i) };
+            return next;
+          });
+          if (i >= full.length) {
+            clearInterval(timer);
+            setStreaming(false);
+          }
+        }, 16);
+      })
+      .catch((err) => {
+        console.error("Loom AI chat call failed:", err);
+        setMessages((m) => [
+          ...m,
+          {
+            role: "assistant",
+            text: "Sorry, I had trouble reaching my AI core. Please check your network and try again.",
+          },
+        ]);
         setStreaming(false);
-      }
-    }, 16);
+      });
   };
 
   return (

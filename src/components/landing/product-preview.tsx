@@ -23,7 +23,7 @@ export function ProductPreview() {
           <div
             role="tablist"
             aria-label="Preview surface"
-            className="inline-flex rounded-full border border-border bg-surface p-1"
+            className="inline-flex rounded-full border border-border bg-surface p-1 shadow-soft"
           >
             {tabs.map((t) => (
               <button
@@ -32,7 +32,7 @@ export function ProductPreview() {
                 aria-selected={tab === t}
                 onClick={() => setTab(t)}
                 className={cn(
-                  "relative rounded-full px-5 py-2.5 text-sm font-medium transition-colors",
+                  "relative rounded-full px-5 py-2.5 text-sm font-medium transition-colors cursor-pointer",
                   tab === t ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -51,7 +51,7 @@ export function ProductPreview() {
       </div>
 
       <Reveal delay={0.05} className="mt-14 max-w-none">
-        <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-3 shadow-lift sm:p-5">
+        <div className="relative overflow-hidden rounded-3xl border border-border/10 bg-card/60 p-3 shadow-lift sm:p-5 backdrop-blur-xl">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 -top-24 h-48 opacity-70 blur-[80px]"
@@ -90,12 +90,12 @@ function StatTile({
   delta: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
+    <div className="rounded-2xl border border-border/10 bg-surface/50 p-5 shadow-soft hover-lift transition-all duration-300">
       <div className="flex items-center justify-between">
-        <span className="grid size-9 place-items-center rounded-lg bg-accent">
+        <span className="grid size-9 place-items-center rounded-xl bg-accent/70">
           <Icon className="size-4 text-primary" />
         </span>
-        <span className="flex items-center gap-0.5 text-xs font-semibold text-success">
+        <span className="flex items-center gap-0.5 text-xs font-semibold text-success bg-success/10 px-2 py-0.5 rounded-full">
           <ArrowUpRight className="size-3.5" />
           {delta}
         </span>
@@ -115,8 +115,8 @@ function BuyerPreview() {
           <StatTile icon={Truck} label="On-time delivery" value="98.2%" delta="1.4%" />
           <StatTile icon={TrendingUp} label="Spend this quarter" value="₹2.43 Cr" delta="8%" />
         </div>
-        <div className="rounded-2xl border border-border bg-surface p-6">
-          <p className="text-sm font-semibold">Order timeline · LM-48213</p>
+        <div className="rounded-2xl border border-border/10 bg-surface/50 p-6 backdrop-blur-md">
+          <p className="text-sm font-semibold tracking-tight text-foreground">Order timeline · LM-48213</p>
           <ol className="mt-6 space-y-5">
             {([
               ["Purchase order confirmed", "12 Jul · Arvind Weaving House"],
@@ -128,15 +128,15 @@ function BuyerPreview() {
                 <span className="relative mt-1 flex flex-col items-center">
                   <span
                     className={cn(
-                      "size-2.5 rounded-full",
-                      i < 3 ? "bg-success" : "bg-primary ring-4 ring-primary/15",
+                      "size-2.5 rounded-full transition-all duration-300",
+                      i < 3 ? "bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-primary ring-4 ring-primary/20",
                     )}
                   />
-                  {i < 3 ? <span className="mt-1 h-9 w-px bg-border-strong" /> : null}
+                  {i < 3 ? <span className="mt-1 h-9 w-px bg-border/60" /> : null}
                 </span>
                 <span>
-                  <span className="block text-sm font-medium">{title}</span>
-                  <span className="block text-xs text-muted-foreground">{meta}</span>
+                  <span className="block text-sm font-medium text-foreground">{title}</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">{meta}</span>
                 </span>
               </li>
             ))}
@@ -144,15 +144,14 @@ function BuyerPreview() {
         </div>
       </div>
       <div className="space-y-3">
-        <div className="gradient-ring rounded-2xl bg-surface p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-subtle">
-            AI recommendation
+        <div className="gradient-ring rounded-2xl bg-surface/50 p-6 backdrop-blur-md">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
+            Spotlight Swatch
           </p>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Baltic Linen has 21,500 m of 185 GSM flax at ₹486/m — 9% under your last linen buy with
-            a 15-day lead that fits the September cut date.
+            Enzyme-washed European flax linen with lived-in softness. Pre-shrunk and garment-ready for seasonal shirting collections.
           </p>
-          <div className="mt-5 flex items-center gap-3 rounded-xl border border-border p-3">
+          <div className="mt-5 flex items-center gap-3 rounded-xl border border-border/10 bg-background/50 p-3 hover:border-primary/30 transition-all">
             <img
               src={fabricImages.linen}
               alt=""
@@ -165,7 +164,7 @@ function BuyerPreview() {
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border bg-surface p-6">
+        <div className="rounded-2xl border border-border/10 bg-surface/50 p-6 backdrop-blur-md">
           <p className="text-sm font-semibold">Saved suppliers</p>
           <ul className="mt-4 space-y-3.5">
             {([
@@ -173,12 +172,12 @@ function BuyerPreview() {
               ["Baltic Linen Works", "Vilnius · 6h response"],
               ["Milano Lana Tessuti", "Biella · 8h response"],
             ] as [string, string][]).map(([n, m]) => (
-              <li key={n} className="flex items-center gap-3">
-                <span className="grid size-8 place-items-center rounded-full bg-accent text-[0.65rem] font-bold text-primary">
+              <li key={n} className="flex items-center gap-3 group">
+                <span className="grid size-8 place-items-center rounded-full bg-accent text-[0.65rem] font-bold text-primary group-hover:scale-105 transition-transform duration-300">
                   {n.slice(0, 2).toUpperCase()}
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium">{n}</span>
+                  <span className="block truncate text-sm font-medium text-foreground">{n}</span>
                   <span className="block text-xs text-muted-foreground">{m}</span>
                 </span>
               </li>
@@ -199,9 +198,9 @@ function SupplierPreview() {
           <StatTile icon={TrendingUp} label="Revenue this month" value="₹74.8 L" delta="18%" />
           <StatTile icon={Users} label="Repeat buyers" value="22" delta="6%" />
         </div>
-        <div className="rounded-2xl border border-border bg-surface p-6">
+        <div className="rounded-2xl border border-border/10 bg-surface/50 p-6 backdrop-blur-md">
           <p className="text-sm font-semibold">Capacity utilisation</p>
-          <div className="mt-6 flex h-32 items-end gap-2">
+          <div className="mt-6 flex h-32 items-end gap-2.5">
             {bars.map((h, i) => (
               <motion.span
                 key={i}
@@ -209,7 +208,7 @@ function SupplierPreview() {
                 whileInView={{ height: `${h}%` }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                className="flex-1 rounded-t-md bg-gradient-to-t from-primary/25 to-primary"
+                className="flex-1 rounded-t-md bg-gradient-to-t from-primary/30 to-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.3)]"
               />
             ))}
           </div>
@@ -218,7 +217,7 @@ function SupplierPreview() {
           </p>
         </div>
       </div>
-      <div className="rounded-2xl border border-border bg-surface p-6">
+      <div className="rounded-2xl border border-border/10 bg-surface/50 p-6 backdrop-blur-md">
         <p className="text-sm font-semibold">Incoming purchase orders</p>
         <div className="mt-5 space-y-2.5">
           {([
@@ -229,11 +228,11 @@ function SupplierPreview() {
           ] as [string, string, string, number, string][]).map(([id, buyer, qty, value, stage]) => (
             <div
               key={id}
-              className="flex items-center gap-4 rounded-xl border border-border px-4 py-3.5 transition-colors hover:bg-accent"
+              className="flex items-center gap-4 rounded-xl border border-border/10 bg-background/30 px-4 py-3.5 transition-all hover:bg-accent/40 hover:-translate-y-0.5"
             >
               <span className="w-20 shrink-0 font-mono text-xs text-subtle">{id}</span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{buyer}</span>
+                <span className="block truncate text-sm font-medium text-foreground">{buyer}</span>
                 <span className="block text-xs text-muted-foreground">{qty}</span>
               </span>
               <span className="hidden text-sm font-semibold sm:block">{inr(value)}</span>
