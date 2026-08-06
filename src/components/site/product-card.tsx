@@ -252,7 +252,7 @@ export function AiRecommendBanner() {
         <div>
           <h3 className="text-base font-semibold">Matched to your last three orders</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Loomly AI ranked these by hand-feel similarity, landed cost and mill capacity for your
+            Texora AI ranked these by hand-feel similarity, landed cost and mill capacity for your
             September cut date.
           </p>
         </div>

@@ -3,9 +3,9 @@ import { brandLogos } from "@/lib/data";
 export function LogoMarquee() {
   const row = [...brandLogos, ...brandLogos];
   return (
-    <section className="mt-40 overflow-hidden py-6" aria-label="Brands sourcing on Loomly">
+    <section className="mt-40 overflow-hidden py-6" aria-label="Brands sourcing on Texora">
       <p className="mb-8 text-center text-[0.7rem] uppercase tracking-[0.18em] text-subtle">
-        Sourcing teams building on Loomly
+        Sourcing teams building on Texora
       </p>
       <div
         className="relative"

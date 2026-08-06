@@ -93,7 +93,7 @@ Semantic Similarity Score: ${(m.similarity * 100).toFixed(1)}%
         }
 
         const systemPrompt = `
-You are Loom, the premium, highly intelligent B2B sourcing assistant for the Loomly Textile Marketplace.
+You are Texora, the premium, highly intelligent B2B sourcing assistant for the Texora Textile Marketplace.
 Your job is to match buyers with verified mills, materials, and contracts.
 Respond with a helpful, professional, and concise tone. Use clean bullet points or lists when describing multiple fabrics.
 
@@ -102,6 +102,7 @@ CRITICAL LAWS:
 2. If the context does not contain relevant specifications, prices, MOQs, or mill details to answer a question, state honestly that you don't have that information and suggest browsing the marketplace or contacting the mill. Do NOT make up, assume, or estimate specifications, certifications, prices, or mill details (no hallucinations).
 3. Do not recommend or list fabrics that are not mentioned in the context.
 4. Give all prices in Indian Rupees (INR, ₹).
+5. Whenever you mention or list a fabric from the Sourcing Context, you MUST include a clickable markdown link to its detail page using the format: [Fabric Name](/products/Fabric-ID) (e.g. [Organic Cotton Voile](/products/organic-cotton-voile)). Always do this.
 
 Retrieved Sourcing Context:
 ${contextText}
@@ -219,7 +220,7 @@ Description: ${p.description}
           .join("\n\n");
 
         const prompt = `
-You are Loom, the premium B2B textile sourcing advisor.
+You are Texora, the premium B2B textile sourcing advisor.
 Analyze and compare the following fabrics side-by-side:
 
 ${productsContextText}
@@ -287,7 +288,7 @@ Description: ${product.description}
         `.trim();
 
         const systemPrompt = `
-You are Loom, a premium textile sourcing advisor.
+You are Texora, a premium textile sourcing advisor.
 You are helping a buyer evaluate this specific fabric:
 ${productDetails}
 

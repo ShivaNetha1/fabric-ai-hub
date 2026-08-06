@@ -15,7 +15,7 @@ const features = [
   {
     icon: Sparkles,
     title: "Intelligent discovery",
-    body: "Semantic search reads composition, hand-feel and finish notes — not just keywords — to rank 10,412 fabrics against your brief.",
+    body: "Semantic search reads composition, hand-feel and finish notes — not just keywords — to rank every listed fabric against your brief.",
   },
   {
     icon: BadgeCheck,
@@ -30,7 +30,7 @@ const features = [
   {
     icon: Mic,
     title: "Voice search",
-    body: "Speak a spec on the factory floor. Loom transcribes, parses GSM and width, and returns matching stock.",
+    body: "Speak a spec on the factory floor. Texora transcribes, parses GSM and width, and returns matching stock.",
   },
   {
     icon: MessageSquareText,

@@ -9,13 +9,13 @@ import { Testimonials, ClosingCta } from "@/components/landing/testimonials";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Loomly — Premium Textile Marketplace for Buyers & Mills" },
+      { title: "Texora — Premium Textile Marketplace for Buyers & Mills" },
       {
         name: "description",
         content:
-          "Discover 10,400+ fabrics from 1,200 verified mills. Semantic search, live inventory, bulk ordering and smart supplier matches for apparel sourcing teams.",
+          "Discover thousands of fabrics from verified mills. Semantic search, live inventory, bulk ordering and smart supplier matches for apparel sourcing teams.",
       },
-      { property: "og:title", content: "Loomly — Premium Textile Marketplace" },
+      { property: "og:title", content: "Texora — Premium Textile Marketplace" },
       {
         property: "og:description",
         content:
@@ -28,8 +28,8 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <div className="pb-8">
-      <h1 className="sr-only">Loomly — Premium B2B textile marketplace</h1>
+    <div className="relative min-h-screen overflow-hidden bg-background selection:bg-primary/10">
+      <h1 className="sr-only">Texora — Premium B2B textile marketplace</h1>
       <Hero />
       <LogoMarquee />
       <ProductPreview />

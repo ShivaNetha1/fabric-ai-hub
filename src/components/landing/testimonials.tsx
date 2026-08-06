@@ -67,7 +67,7 @@ export function ClosingCta() {
                 </Link>
               </Button>
               <Button size="xl" variant="ai" asChild>
-                <Link to="/marketplace">Browse 10,412 fabrics</Link>
+                <Link to="/marketplace">Browse fabric catalog</Link>
               </Button>
             </div>
           </div>

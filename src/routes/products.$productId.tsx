@@ -30,14 +30,14 @@ export const Route = createFileRoute("/products/$productId")({
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Fabric not found — Loomly" }, { name: "robots", content: "noindex" }] };
+      return { meta: [{ title: "Fabric not found — Texora" }, { name: "robots", content: "noindex" }] };
     }
     const p = loaderData.product;
     return {
       meta: [
-        { title: `${p.name} — ${inr(p.pricePerMetre)}/m | Loomly` },
+        { title: `${p.name} — ${inr(p.pricePerMetre)}/m | Texora` },
         { name: "description", content: p.description.slice(0, 155) },
-        { property: "og:title", content: `${p.name} — Loomly` },
+        { property: "og:title", content: `${p.name} — Texora` },
         { property: "og:description", content: p.description.slice(0, 155) },
       ],
     };
@@ -132,7 +132,7 @@ function ProductDetail() {
               <Button variant="outline" size="sm" onClick={() => toast("Comparison opened", { description: product.name })}>
                 <GitCompare /> Compare fabrics
               </Button>
-              <Button variant="ai" size="sm" onClick={() => toast("Loom AI is drafting a spec sheet")}>
+              <Button variant="ai" size="sm" onClick={() => toast("Texora AI is drafting a spec sheet")}>
                 <Sparkles /> Generate spec sheet
               </Button>
             </div>

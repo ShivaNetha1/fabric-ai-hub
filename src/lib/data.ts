@@ -451,7 +451,7 @@ export const getSupplier = (id: string) => suppliers.find((s) => s.id === id);
 export const materials = ["Cotton", "Silk", "Linen", "Denim", "Wool", "Blend", "Knit", "Technical"];
 
 export const marketplaceStats = [
-  { label: "Fabrics indexed", value: "10,400+" },
+  { label: "Fabrics indexed", value: "Thousands+" },
   { label: "Verified suppliers", value: "1,200" },
   { label: "Countries sourced", value: "48" },
   { label: "Orders fulfilled", value: "1M+" },
@@ -471,7 +471,7 @@ export const brandLogos = [
 export const testimonials = [
   {
     quote:
-      "We replaced four sourcing agents with Loomly. Semantic search found a GOTS poplin at the right MOQ in eleven minutes — that used to be a three-week hunt.",
+      "We replaced four sourcing agents with Texora. Semantic search found a GOTS poplin at the right MOQ in eleven minutes — that used to be a three-week hunt.",
     name: "Ananya Rao",
     role: "Head of Sourcing, Nordvelt",
   },

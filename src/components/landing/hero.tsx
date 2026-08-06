@@ -134,7 +134,7 @@ export function Hero() {
             <Star className="size-3.5 text-warning" /> 4.9 average supplier rating
           </span>
           <span className="flex items-center gap-1.5">
-            <Sparkles className="size-3.5 text-primary" /> Vector search across 10,412 fabrics
+            <Sparkles className="size-3.5 text-primary" /> Vector search across verified catalogs
           </span>
         </motion.div>
       </motion.div>

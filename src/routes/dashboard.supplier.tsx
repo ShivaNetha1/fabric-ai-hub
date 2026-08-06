@@ -31,7 +31,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/supplier")({
   head: () => ({
-    meta: [{ title: "Supplier Dashboard — Loomly" }],
+    meta: [{ title: "Supplier Dashboard — Texora" }],
   }),
   component: SupplierDashboard,
 });

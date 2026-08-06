@@ -10,7 +10,7 @@ import { Logo } from "./logo";
 
 const megaMenu = {
   Marketplace: [
-    { label: "All fabrics", to: "/marketplace", desc: "10,400 indexed materials" },
+    { label: "All fabrics", to: "/marketplace", desc: "Browse verified collections" },
     { label: "Cotton & shirting", to: "/marketplace", desc: "Poplin, twill, chambray" },
     { label: "Luxury silk", to: "/marketplace", desc: "Charmeuse, dupion, jacquard" },
     { label: "Technical & recycled", to: "/marketplace", desc: "GRS, performance finishes" },
@@ -60,7 +60,7 @@ export function SiteNav() {
           scrolled ? "glass-strong shadow-soft" : "border border-transparent",
         )}
       >
-        <Link to="/" className="flex shrink-0 items-center gap-2.5" aria-label="Loomly home">
+        <Link to="/" className="flex shrink-0 items-center gap-2.5" aria-label="Texora home">
           <Logo />
         </Link>
 

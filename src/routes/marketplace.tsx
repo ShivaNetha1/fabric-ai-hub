@@ -14,13 +14,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/marketplace")({
   head: () => ({
     meta: [
-      { title: "Marketplace — Browse 10,400 Verified Fabrics | Loomly" },
+      { title: "Marketplace — Browse Premium Verified Fabrics | Texora" },
       {
         name: "description",
         content:
-          "Filter cotton, silk, linen, wool and technical fabrics by MOQ, price, GSM, width and certification. Live stock from 1,200 verified mills.",
+          "Filter cotton, silk, linen, wool and technical fabrics by MOQ, price, GSM, width and certification. Live stock from verified mills.",
       },
-      { property: "og:title", content: "Loomly Marketplace — 10,400 verified fabrics" },
+      { property: "og:title", content: "Texora Marketplace — Browse verified fabrics" },
       {
         property: "og:description",
         content: "Search across every connected textile mill.",

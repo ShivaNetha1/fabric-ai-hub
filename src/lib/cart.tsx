@@ -44,7 +44,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const dbCart = await dbService.getCartItems(user.id);
         
         // Merge guest cart if it exists
-        const guestCartStr = localStorage.getItem("loomly_guest_cart");
+        const guestCartStr = localStorage.getItem("texora_guest_cart");
         if (guestCartStr) {
           try {
             const guestCart = JSON.parse(guestCartStr) as CartLine[];
@@ -66,7 +66,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 await dbService.syncCartItem(user.id, item.productId, item.metres, item.colour);
               }
             }
-            localStorage.removeItem("loomly_guest_cart");
+            localStorage.removeItem("texora_guest_cart");
           } catch (e) {
             console.error("Failed to merge guest cart:", e);
           }
@@ -74,7 +74,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setLines(dbCart);
       } else {
         // Load guest cart
-        const guestCartStr = localStorage.getItem("loomly_guest_cart");
+        const guestCartStr = localStorage.getItem("texora_guest_cart");
         if (guestCartStr) {
           setLines(JSON.parse(guestCartStr));
         } else {
@@ -106,7 +106,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (!user) {
-          localStorage.setItem("loomly_guest_cart", JSON.stringify(updated));
+          localStorage.setItem("texora_guest_cart", JSON.stringify(updated));
         }
         return updated;
       });
@@ -125,7 +125,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           (l) => !(l.productId === productId && (!colour || l.colour === colour))
         );
         if (!user) {
-          localStorage.setItem("loomly_guest_cart", JSON.stringify(updated));
+          localStorage.setItem("texora_guest_cart", JSON.stringify(updated));
         }
         return updated;
       });
@@ -147,7 +147,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             : l
         );
         if (!user) {
-          localStorage.setItem("loomly_guest_cart", JSON.stringify(updated));
+          localStorage.setItem("texora_guest_cart", JSON.stringify(updated));
         }
         return updated;
       });
@@ -168,7 +168,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       await dbService.clearCart(user.id);
     } else {
-      localStorage.removeItem("loomly_guest_cart");
+      localStorage.removeItem("texora_guest_cart");
     }
   }, [user]);
 

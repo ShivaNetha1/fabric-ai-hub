@@ -104,7 +104,7 @@ export function SiteFooter() {
 
         <div className="mt-16 flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-subtle">
-            © 2026 Loomly Technologies. Registered in Bengaluru, India.
+            © 2026 Texora Technologies. Registered in Bengaluru, India.
           </p>
           <p className="text-xs text-subtle">
             Trusted by 1,200 verified mills across 48 countries.

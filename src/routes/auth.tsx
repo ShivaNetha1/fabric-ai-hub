@@ -22,9 +22,9 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (search) => authSearchSchema.parse(search),
   head: () => ({
     meta: [
-      { title: "Authentication — Loomly Textile Marketplace" },
-      { name: "description", content: "Sign in or sign up as a fabric buyer or supplier to access Loomly's AI sourcing workspace." },
-      { property: "og:title", content: "Authentication — Loomly" },
+      { title: "Authentication — Texora Textile Marketplace" },
+      { name: "description", content: "Sign in or sign up as a fabric buyer or supplier to access Texora's AI sourcing workspace." },
+      { property: "og:title", content: "Authentication — Texora" },
       { property: "og:description", content: "Buyer and supplier access to AI-powered textile sourcing." },
     ],
   }),
@@ -143,7 +143,7 @@ function Auth() {
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/25 to-transparent" />
         <div className="absolute inset-x-12 bottom-14">
           <p className="text-2xl font-semibold leading-snug tracking-[-0.03em] text-primary-foreground">
-            “Loomly turned a three-week sourcing hunt into an eleven-minute search.”
+            “Texora turned a three-week sourcing hunt into an eleven-minute search.”
           </p>
           <p className="mt-4 text-sm text-primary-foreground/70">Ananya Rao · Head of Sourcing, Nordvelt</p>
         </div>
@@ -284,7 +284,7 @@ function Auth() {
           </div>
 
           <p className="mt-7 text-center text-xs text-muted-foreground">
-            {isSignUp ? "Already have an account?" : "New to Loomly?"}{" "}
+            {isSignUp ? "Already have an account?" : "New to Texora?"}{" "}
             <button
               onClick={() => {
                 const nextMode = !isSignUp ? "signup" : "signin";

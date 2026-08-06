@@ -15,8 +15,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Onboarding — Loomly" },
-      { name: "description", content: "Onboarding setup for Loomly marketplace profiles." },
+      { title: "Onboarding — Texora" },
+      { name: "description", content: "Onboarding setup for Texora marketplace profiles." },
     ],
   }),
   component: Onboarding,
@@ -58,7 +58,7 @@ function Onboarding() {
 
   const savePreferences = React.useCallback(async (ans: string[]) => {
     if (!user) {
-      localStorage.setItem("loomly_guest_onboarding", JSON.stringify(ans));
+      localStorage.setItem("texora_guest_onboarding", JSON.stringify(ans));
       return;
     }
 
@@ -167,7 +167,7 @@ function Onboarding() {
                     <>
                       <h2 className="mt-6 text-xl font-semibold">Your mill workspace is ready</h2>
                       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-                        Loom AI has initialized your digital showroom. List your catalog fabrics and manage incoming buyer contracts from one unified workspace.
+                        Texora AI has initialized your digital showroom. List your catalog fabrics and manage incoming buyer contracts from one unified workspace.
                       </p>
                       <div className="mt-8 flex flex-wrap justify-center gap-3">
                         <Button size="lg" asChild>
@@ -177,11 +177,11 @@ function Onboarding() {
                     </>
                   ) : (
                     <>
-                      <h2 className="mt-6 text-xl font-semibold">Your sourcing feed is ready</h2>
-                      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-                        Loom AI matched 214 fabrics across 38 verified mills to your profile, ranked by
-                        landed cost and lead time. Recommendations improve with every order.
-                      </p>
+                       <h2 className="mt-6 text-xl font-semibold">Your sourcing feed is ready</h2>
+                       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+                         Texora AI matched 214 fabrics across 38 verified mills to your profile, ranked by
+                         landed cost and lead time. Recommendations improve with every order.
+                       </p>
                       <div className="mt-8 flex flex-wrap justify-center gap-3">
                         <Button size="lg" asChild>
                           <Link to="/marketplace">See my matches <ArrowRight /></Link>

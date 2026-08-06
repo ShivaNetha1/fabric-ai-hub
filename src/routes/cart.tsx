@@ -8,9 +8,9 @@ import { getSupplier, inr } from "@/lib/data";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Shopping Cart — Loomly" },
+      { title: "Shopping Cart — Texora" },
       { name: "description", content: "Review fabric quantities, colourways and mill terms before raising your purchase order." },
-      { property: "og:title", content: "Your Loomly cart" },
+      { property: "og:title", content: "Your Texora cart" },
       { property: "og:description", content: "Bulk fabric lines, MOQ-checked and ready for checkout." },
     ],
   }),

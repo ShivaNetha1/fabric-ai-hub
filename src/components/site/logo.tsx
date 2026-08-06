@@ -1,4 +1,4 @@
-export function Logo({ label = "Loomly" }: { label?: string }) {
+export function Logo({ label = "Texora" }: { label?: string }) {
   return (
     <span className="flex items-center gap-2.5">
       <span className="grid size-8 place-items-center rounded-[0.7rem] bg-gradient-premium shadow-soft">

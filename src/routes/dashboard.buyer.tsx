@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/buyer")({
   head: () => ({
-    meta: [{ title: "Buyer Dashboard — Loomly" }],
+    meta: [{ title: "Buyer Dashboard — Texora" }],
   }),
   component: BuyerDashboard,
 });
@@ -244,7 +244,7 @@ function BuyerDashboard() {
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="mt-0.5 block size-1.5 rounded-full bg-success" />
-                  <span><strong>Freight Coordination</strong>: Loomly automatically handles custom clearances and consolidates shipments from verified hubs to lower carbon foot-print.</span>
+                  <span><strong>Freight Coordination</strong>: Texora automatically handles custom clearances and consolidates shipments from verified hubs to lower carbon foot-print.</span>
                 </li>
               </ul>
             </div>

@@ -87,21 +87,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Loomly — AI Textile Sourcing Marketplace" },
+      { title: "Texora — AI Textile Sourcing Marketplace" },
       {
         name: "description",
         content:
-          "Loomly connects apparel buyers with 1,200 verified textile mills through AI-powered fabric discovery, live inventory and bulk ordering.",
+          "Texora connects apparel buyers with verified textile mills through AI-powered fabric discovery, live inventory and bulk ordering.",
       },
-      { name: "author", content: "Loomly" },
-      { property: "og:title", content: "Loomly — AI Textile Sourcing Marketplace" },
+      { name: "author", content: "Texora" },
+      { property: "og:title", content: "Texora — AI Textile Sourcing Marketplace" },
       {
         property: "og:description",
-        content: "AI-powered fabric discovery across 10,400 materials and 1,200 verified mills.",
+        content: "AI-powered fabric discovery across thousands of premium materials and verified mills.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Loomly" },
+      { name: "twitter:site", content: "@Texora" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

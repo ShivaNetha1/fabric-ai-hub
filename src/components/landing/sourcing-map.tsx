@@ -66,7 +66,7 @@ export function SourcingMap() {
           viewBox="0 0 100 80"
           className="relative aspect-2/1 w-full"
           role="img"
-          aria-label="World map showing Loomly supplier hubs and active trade lanes"
+          aria-label="World map showing Texora supplier hubs and active trade lanes"
         >
           <defs>
             <linearGradient id="lane" x1="0" x2="1">

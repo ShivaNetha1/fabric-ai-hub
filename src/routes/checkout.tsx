@@ -16,9 +16,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — Loomly" },
+      { title: "Checkout — Texora" },
       { name: "description", content: "Confirm shipping lane, GST details and payment terms to raise your fabric purchase order." },
-      { property: "og:title", content: "Checkout — Loomly" },
+      { property: "og:title", content: "Checkout — Texora" },
       { property: "og:description", content: "Two-step bulk fabric checkout with escrow protection." },
     ],
   }),

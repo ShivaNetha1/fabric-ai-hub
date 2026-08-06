@@ -31,12 +31,12 @@ export const Route = createFileRoute("/suppliers/$supplierId")({
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Supplier not found — Loomly" }] };
+      return { meta: [{ title: "Supplier not found — Texora" }] };
     }
     const s = loaderData.supplier;
     return {
       meta: [
-        { title: `${s.name} — Verified Textile Mill | Loomly` },
+        { title: `${s.name} — Verified Textile Mill | Texora` },
         { name: "description", content: `${s.name} in ${s.city}, ${s.country}. Verified since ${s.since} producing ${s.categories.join(", ")}.` }
       ]
     };
