@@ -107,7 +107,7 @@ export function AiAssistant() {
   const [open, setOpen] = React.useState(false);
   const [input, setInput] = React.useState("");
   const [streaming, setStreaming] = React.useState(false);
-  const [listening, setListening] = React.useState(false);
+  // const [listening, setListening] = React.useState(false);
   const [messages, setMessages] = React.useState<Msg[]>([
     {
       role: "assistant",
@@ -116,47 +116,47 @@ export function AiAssistant() {
   ]);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
-  const startSpeechRecognition = React.useCallback(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      toast.error("Speech recognition is not supported in this browser. Try Chrome, Edge, or Safari.");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setListening(true);
-      toast.info("Listening... Speak now.", { id: "voice-search-toast" });
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error:", event.error);
-      setListening(false);
-      if (event.error === "not-allowed") {
-        toast.error("Microphone permission denied.");
-      } else {
-        toast.error("Speech recognition error: " + event.error);
-      }
-    };
-
-    recognition.onend = () => {
-      setListening(false);
-    };
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0]?.[0]?.transcript;
-      if (transcript) {
-        setInput(transcript);
-        toast.success("Voice transcribed!", { id: "voice-search-toast" });
-      }
-    };
-
-    recognition.start();
-  }, []);
+  // const startSpeechRecognition = React.useCallback(() => {
+  //   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  //   if (!SpeechRecognition) {
+  //     toast.error("Speech recognition is not supported in this browser. Try Chrome, Edge, or Safari.");
+  //     return;
+  //   }
+  // 
+  //   const recognition = new SpeechRecognition();
+  //   recognition.lang = "en-US";
+  //   recognition.interimResults = false;
+  //   recognition.maxAlternatives = 1;
+  // 
+  //   recognition.onstart = () => {
+  //     setListening(true);
+  //     toast.info("Listening... Speak now.", { id: "voice-search-toast" });
+  //   };
+  // 
+  //   recognition.onerror = (event: any) => {
+  //     console.error("Speech recognition error:", event.error);
+  //     setListening(false);
+  //     if (event.error === "not-allowed") {
+  //       toast.error("Microphone permission denied.");
+  //     } else {
+  //       toast.error("Speech recognition error: " + event.error);
+  //     }
+  //   };
+  // 
+  //   recognition.onend = () => {
+  //     setListening(false);
+  //   };
+  // 
+  //   recognition.onresult = (event: any) => {
+  //     const transcript = event.results[0]?.[0]?.transcript;
+  //     if (transcript) {
+  //       setInput(transcript);
+  //       toast.success("Voice transcribed!", { id: "voice-search-toast" });
+  //     }
+  //   };
+  // 
+  //   recognition.start();
+  // }, []);
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -305,7 +305,7 @@ export function AiAssistant() {
                 }}
                 className="flex items-center gap-2 rounded-2xl border border-border bg-surface px-3 py-2"
               >
-                <button
+                {/* <button
                   type="button"
                   onClick={listening ? undefined : startSpeechRecognition}
                   disabled={listening}
@@ -318,7 +318,7 @@ export function AiAssistant() {
                   )}
                 >
                   <Mic className="size-4" />
-                </button>
+                </button> */}
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}

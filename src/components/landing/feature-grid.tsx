@@ -27,11 +27,11 @@ const features = [
     title: "Bulk ordering",
     body: "Split a purchase order across colourways, lots and delivery windows with MOQ enforced at the line level.",
   },
-  {
-    icon: Mic,
-    title: "Voice search",
-    body: "Speak a spec on the factory floor. Texora transcribes, parses GSM and width, and returns matching stock.",
-  },
+  // {
+  //   icon: Mic,
+  //   title: "Voice search",
+  //   body: "Speak a spec on the factory floor. Texora transcribes, parses GSM and width, and returns matching stock.",
+  // },
   {
     icon: MessageSquareText,
     title: "Natural language search",

@@ -97,9 +97,9 @@ function Marketplace() {
               aria-label="Search fabrics"
               className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-subtle"
             />
-            <Button variant="ghost" size="icon" aria-label="Voice search">
+            {/* <Button variant="ghost" size="icon" aria-label="Voice search">
               <Mic />
-            </Button>
+            </Button> */}
             <Button size="sm" className="shrink-0 rounded-full px-5">
               Search
             </Button>
