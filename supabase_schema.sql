@@ -23,6 +23,9 @@ create table public.profiles (
 create table public.suppliers (
   id uuid references public.profiles(id) on delete cascade primary key,
   name text not null,
+  business_type text,
+  contact_info text,
+  address text,
   city text not null,
   country text not null,
   since integer check (since > 1900),
@@ -31,6 +34,7 @@ create table public.suppliers (
   orders_count integer default 0 not null,
   response_hours integer default 24 check (response_hours >= 0),
   categories text[] default '{}'::text[] not null,
+  fabric_types text[] default '{}'::text[] not null,
   certificates text[] default '{}'::text[] not null,
   about text,
   hours text,

@@ -40,19 +40,24 @@ const buyerSteps: OnboardingStep[] = [
 
 const supplierSteps: OnboardingStep[] = [
   { key: "companyName", q: "What is your mill or business name?", isInput: true, placeholder: "e.g., Arvind Weaving House" },
-  { key: "location", q: "Where is your mill located? (City, Country)", isInput: true, placeholder: "e.g., Ahmedabad, India" },
-  { key: "categories", q: "Which fabric categories do you specialize in?", options: ["Cotton & Denim", "Silk & luxury", "Linen & hemp", "Wool & suiting"] },
+  { key: "businessType", q: "Which business type best describes your operation?", isInput: true, placeholder: "e.g., Fabric mill, Vertical supply chain, Dye house" },
+  { key: "contactInfo", q: "Best contact information for buyers to reach you", isInput: true, placeholder: "e.g., +91 98765 43210 / sales@mill.com" },
+  { key: "address", q: "What is your business address?", isInput: true, placeholder: "e.g., 45 Textile Park, Ahmedabad, India" },
+  { key: "hours", q: "What are your operating hours?", isInput: true, placeholder: "e.g., Mon–Fri · 09:00–18:00 IST" },
+  { key: "categories", q: "Which product categories do you list?", options: ["Cotton & Denim", "Silk & luxury", "Linen & hemp", "Wool & suiting"] },
+  { key: "fabricTypes", q: "Which types of fabrics do you offer?", options: ["Wovens", "Knits", "Silk", "Technical textiles"] },
   { key: "moq", q: "What is your standard Minimum Order Quantity (MOQ)?", options: ["No MOQ", "Under 100 m", "100 – 300 m", "300 m+"] },
-  { key: "about", q: "Tell us briefly about your mill's weaving heritage or capacity", isInput: true, placeholder: "e.g., 3 generations of air-jet weaving, serving global labels..." }
+  { key: "about", q: "Any additional business information buyers should know?", isInput: true, placeholder: "e.g., 3 generations of air-jet weaving, quality certifications, export capacity..." }
 ];
 
 function Onboarding() {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [step, setStep] = React.useState(0);
   const [answers, setAnswers] = React.useState<string[]>([]);
   const [inputValue, setInputValue] = React.useState("");
 
-  const activeSteps = profile?.role === "supplier" ? supplierSteps : buyerSteps;
+  const role = profile?.role === "supplier" ? "supplier" : "buyer";
+  const activeSteps = role === "supplier" ? supplierSteps : buyerSteps;
   const done = step >= activeSteps.length;
   const current = activeSteps[step];
 
@@ -65,28 +70,37 @@ function Onboarding() {
     try {
       if (profile?.role === "supplier") {
         const companyName = ans[0] || "My Mill";
-        const locationStr = ans[1] || "";
-        const cityParts = locationStr.split(",");
-        const city = cityParts[0]?.trim() || "Unknown City";
-        const country = cityParts[1]?.trim() || "India";
-        const categoryVal = ans[2] || "Cotton & Denim";
-        const moqText = ans[3] || "No MOQ";
+        const businessType = ans[1] || "Fabric mill";
+        const contactInfo = ans[2] || "";
+        const address = ans[3] || "";
+        const hoursText = ans[4] || "Mon–Fri · 09:00–18:00 Local";
+        const categoryVal = ans[5] || "Cotton & Denim";
+        const fabricTypeVal = ans[6] || "Wovens";
+        const moqText = ans[7] || "No MOQ";
         const moqVal = moqText === "No MOQ" ? 0 : moqText === "Under 100 m" ? 50 : moqText === "100 – 300 m" ? 150 : 300;
-        const aboutText = ans[4] || "";
+        const aboutText = ans[8] || "";
+
+        const addressParts = address.split(",").map((part) => part.trim()).filter(Boolean);
+        const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2] : "Unknown City";
+        const country = addressParts.length >= 1 ? addressParts[addressParts.length - 1] : "India";
 
         const { error } = await supabase.from("suppliers").upsert({
           id: user.id,
           name: companyName,
+          business_type: businessType,
+          contact_info: contactInfo,
+          address,
           city,
           country,
           categories: [categoryVal],
+          fabric_types: [fabricTypeVal],
           moq: moqVal,
           about: aboutText,
           verified: true,
           rating: 5.0,
           orders_count: 0,
           response_hours: 2,
-          hours: "Mon–Fri · 09:00–18:00 Local",
+          hours: hoursText,
         });
 
         if (error) throw error;
@@ -119,6 +133,16 @@ function Onboarding() {
       await savePreferences(nextAnswers);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-6 py-24">
+        <div className="glass-strong rounded-3xl px-8 py-8 text-center shadow-lift">
+          <p className="text-sm font-medium text-muted-foreground">Preparing your onboarding workspace…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-28">
@@ -163,7 +187,7 @@ function Onboarding() {
                     <Check className="size-6 text-primary-foreground" />
                   </motion.span>
                   
-                  {profile?.role === "supplier" ? (
+                  {role === "supplier" ? (
                     <>
                       <h2 className="mt-6 text-xl font-semibold">Your mill workspace is ready</h2>
                       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">

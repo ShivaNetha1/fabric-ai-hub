@@ -16,6 +16,7 @@ import { z } from "zod";
 const authSearchSchema = z.object({
   mode: z.string().optional(),
   role: z.string().optional(),
+  redirectTo: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -55,6 +56,34 @@ function Auth() {
     }
   }, [search.mode, search.role]);
 
+  React.useEffect(() => {
+    if (search.mode !== "signin" || !search.redirectTo) return;
+
+    let isMounted = true;
+
+    const redirectAfterSignIn = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!isMounted || !session?.user) return;
+      navigate({ to: search.redirectTo as string });
+    };
+
+    redirectAfterSignIn();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted || !session?.user) return;
+      navigate({ to: search.redirectTo as string });
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate, search.mode, search.redirectTo]);
+
   const validEmail = /\S+@\S+\.\S+/.test(email);
   const validForm = isSignUp
     ? validEmail && password.length >= 6 && fullName.trim() !== "" && companyName.trim() !== ""
@@ -79,7 +108,7 @@ function Auth() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth?mode=signin`,
+            emailRedirectTo: `${window.location.origin}/auth?mode=signin${role === "Supplier" ? "&redirectTo=/onboarding" : ""}`,
             data: {
               role: role.toLowerCase(),
               full_name: fullName,
@@ -92,7 +121,11 @@ function Auth() {
 
         if (data.session) {
           toast.success("Account created and signed in!");
-          navigate({ to: "/onboarding" });
+          if (role === "Supplier") {
+            navigate({ to: "/onboarding" });
+          } else {
+            navigate({ to: "/dashboard/buyer" });
+          }
         } else {
           setRegisteredEmail(email);
           setShowVerificationModal(true);
@@ -339,7 +372,10 @@ function Auth() {
                   setIsSignUp(false);
                   navigate({
                     to: "/auth",
-                    search: { mode: "signin" },
+                    search: {
+                      mode: "signin",
+                      ...(role === "Supplier" ? { redirectTo: "/onboarding" } : {}),
+                    },
                   });
                 }}
               >
