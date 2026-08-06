@@ -1,5 +1,5 @@
 # ==========================================
-# LOOMLY B2B TEXTILE MARKETPLACE
+# TEXORA B2B TEXTILE MARKETPLACE
 # ==========================================
 #
 # This project is a full-stack Node.js / React application built on Vinxi 

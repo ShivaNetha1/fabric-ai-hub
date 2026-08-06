@@ -123,13 +123,15 @@ export function SiteNav() {
               </Link>
             </Button>
           ) : (
-            <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
-              <Link to="/auth" search={{ mode: "signup" }}>Sign up</Link>
-            </Button>
+            <>
+              <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
+                <Link to="/auth" search={{ mode: "signin" }}>Sign in</Link>
+              </Button>
+              <Button size="sm" asChild className="hidden sm:inline-flex">
+                <Link to="/auth" search={{ mode: "signup" }}>Get started</Link>
+              </Button>
+            </>
           )}
-          <Button size="sm" asChild className="hidden sm:inline-flex">
-            <Link to="/marketplace">Explore marketplace</Link>
-          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -203,9 +205,9 @@ export function SiteNav() {
                 </Link>
               ))}
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-3">
               {user ? (
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="w-full">
                   <Link
                     to={
                       profile?.role === "supplier"
@@ -219,13 +221,15 @@ export function SiteNav() {
                   </Link>
                 </Button>
               ) : (
-                <Button variant="outline" asChild>
-                  <Link to="/auth" search={{ mode: "signup" }}>Sign up</Link>
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" asChild>
+                    <Link to="/auth" search={{ mode: "signin" }}>Sign in</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/auth" search={{ mode: "signup" }}>Get started</Link>
+                  </Button>
+                </div>
               )}
-              <Button asChild>
-                <Link to="/marketplace">Explore</Link>
-              </Button>
             </div>
           </motion.div>
         ) : null}
