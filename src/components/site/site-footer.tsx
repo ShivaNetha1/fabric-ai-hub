@@ -26,7 +26,7 @@ const columns = [
     links: [
       { label: "Supplier dashboard", to: "/dashboard/supplier" },
       { label: "Inventory manager", to: "/inventory" },
-      { label: "Supplier profile", to: "/suppliers/arvind-weaves" },
+      { label: "Verified Suppliers", to: "/suppliers" },
       { label: "Become a supplier", to: "/auth", search: { mode: "signup", role: "supplier" } },
     ],
   },

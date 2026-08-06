@@ -139,9 +139,16 @@ export const dbService = {
         .select("*");
 
       if (error) throw error;
-      if (data && data.length > 0) {
-        return data.map((s) => this.mapSupplier(s));
+      const dbSups = (data || []).map((s) => this.mapSupplier(s));
+      
+      // Combine database suppliers and mock suppliers, avoiding duplicate IDs
+      const merged = [...dbSups];
+      for (const ms of mockSuppliers) {
+        if (!merged.some((s) => s.id === ms.id)) {
+          merged.push(ms);
+        }
       }
+      return merged;
     } catch (err) {
       console.warn("Supabase fetch suppliers failed, falling back to mock data:", err);
     }

@@ -18,6 +18,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as DashboardBuyerRouteImport } from './routes/dashboard.buyer'
 import { Route as DashboardSupplierRouteImport } from './routes/dashboard.supplier'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
+import { Route as SuppliersIndexRouteImport } from './routes/suppliers.index'
 import { Route as SuppliersSupplierIdRouteImport } from './routes/suppliers.$supplierId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -65,6 +66,11 @@ const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
   path: '/products/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SuppliersIndexRoute = SuppliersIndexRouteImport.update({
+  id: '/suppliers/',
+  path: '/suppliers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SuppliersSupplierIdRoute = SuppliersSupplierIdRouteImport.update({
   id: '/suppliers/$supplierId',
   path: '/suppliers/$supplierId',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/supplier': typeof DashboardSupplierRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/suppliers/': typeof SuppliersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/dashboard/supplier': typeof DashboardSupplierRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/suppliers': typeof SuppliersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/dashboard/supplier': typeof DashboardSupplierRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/suppliers/': typeof SuppliersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/dashboard/supplier'
     | '/products/$productId'
     | '/suppliers/$supplierId'
+    | '/suppliers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/dashboard/supplier'
     | '/products/$productId'
     | '/suppliers/$supplierId'
+    | '/suppliers'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/dashboard/supplier'
     | '/products/$productId'
     | '/suppliers/$supplierId'
+    | '/suppliers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   DashboardSupplierRoute: typeof DashboardSupplierRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   SuppliersSupplierIdRoute: typeof SuppliersSupplierIdRoute
+  SuppliersIndexRoute: typeof SuppliersIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/suppliers/': {
+      id: '/suppliers/'
+      path: '/suppliers'
+      fullPath: '/suppliers/'
+      preLoaderRoute: typeof SuppliersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/suppliers/$supplierId': {
       id: '/suppliers/$supplierId'
       path: '/suppliers/$supplierId'
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardSupplierRoute: DashboardSupplierRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   SuppliersSupplierIdRoute: SuppliersSupplierIdRoute,
+  SuppliersIndexRoute: SuppliersIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

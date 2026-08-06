@@ -84,7 +84,7 @@ export function SiteNav() {
               <span className="absolute inset-x-3.5 bottom-1 h-px origin-left scale-x-0 bg-foreground/60 transition-transform duration-300 group-hover:scale-x-100" />
             </button>
           ))}
-          <NavLink to="/suppliers/arvind-weaves">Suppliers</NavLink>
+          <NavLink to="/suppliers">Suppliers</NavLink>
           <NavLink to="/onboarding">Onboarding</NavLink>
         </div>
 
@@ -193,7 +193,7 @@ export function SiteNav() {
                 { label: "Supplier dashboard", to: "/dashboard/supplier" },
                 { label: "Inventory", to: "/inventory" },
                 { label: "Orders", to: "/orders" },
-                { label: "Supplier profile", to: "/suppliers/arvind-weaves" },
+                { label: "Suppliers", to: "/suppliers" },
                 { label: "Onboarding", to: "/onboarding" },
               ].map((i) => (
                 <Link
