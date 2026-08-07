@@ -372,7 +372,10 @@ begin
     p.supplier_id,
     1 - (p.embedding <=> query_embedding) as similarity
   from public.products p
-  where p.embedding is not null and 1 - (p.embedding <=> query_embedding) > match_threshold
+  join public.profiles pr on pr.id = p.supplier_id
+  where p.embedding is not null 
+    and pr.onboarding_completed = true 
+    and 1 - (p.embedding <=> query_embedding) > match_threshold
   order by p.embedding <=> query_embedding
   limit match_count;
 end;
@@ -390,8 +393,18 @@ alter table public.suppliers add column if not exists moq integer default 0;
 alter table public.suppliers add column if not exists logo_url text;
 
 -- Add RLS insert policy fallbacks
+drop policy if exists "Allow users to insert their own supplier record" on public.suppliers;
 create policy "Allow users to insert their own supplier record" on public.suppliers
   for insert with check (auth.uid() = id);
 
+drop policy if exists "Allow users to insert their own buyer record" on public.buyers;
 create policy "Allow users to insert their own buyer record" on public.buyers
   for insert with check (auth.uid() = id);
+
+-- Mark seeded profiles as onboarding_completed = true so their products are visible
+update public.profiles set onboarding_completed = true where id in (
+  '11111111-1111-1111-1111-111111111111',
+  '22222222-2222-2222-2222-222222222222',
+  '33333333-3333-3333-3333-333333333333',
+  '44444444-4444-4444-4444-444444444444'
+);

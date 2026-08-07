@@ -9,7 +9,15 @@ export const dbService = {
     try {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select(`
+          *,
+          suppliers!inner(
+            profiles!inner(
+              onboarding_completed
+            )
+          )
+        `)
+        .eq("suppliers.profiles.onboarding_completed", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
