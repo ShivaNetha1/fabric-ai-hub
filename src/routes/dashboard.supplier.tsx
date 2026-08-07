@@ -59,6 +59,13 @@ function SupplierDashboard() {
   const [profilePhone, setProfilePhone] = React.useState("");
   const [profileAbout, setProfileAbout] = React.useState("");
   const [profileHours, setProfileHours] = React.useState("");
+  const [profileBusinessType, setProfileBusinessType] = React.useState("");
+  const [profileContactInfo, setProfileContactInfo] = React.useState("");
+  const [profileAddress, setProfileAddress] = React.useState("");
+  const [profileCategories, setProfileCategories] = React.useState("");
+  const [profileFabricTypes, setProfileFabricTypes] = React.useState("");
+  const [profileMoq, setProfileMoq] = React.useState(0);
+  const [profileLogoUrl, setProfileLogoUrl] = React.useState("");
 
   // Product Form States
   const [prodId, setProdId] = React.useState("");
@@ -104,6 +111,13 @@ function SupplierDashboard() {
         setProfilePhone(sup.phone || "");
         setProfileAbout(sup.about || "");
         setProfileHours(sup.hours || "");
+        setProfileBusinessType(sup.businessType || "");
+        setProfileContactInfo(sup.contactInfo || "");
+        setProfileAddress(sup.address || "");
+        setProfileCategories(sup.categories?.join(", ") || "");
+        setProfileFabricTypes(sup.fabricTypes?.join(", ") || "");
+        setProfileMoq(sup.moq || 0);
+        setProfileLogoUrl(sup.logoUrl || "");
       }
 
       const ords = await dbService.getOrdersBySupplier(user.id);
@@ -163,6 +177,13 @@ function SupplierDashboard() {
         phone: profilePhone,
         about: profileAbout,
         hours: profileHours,
+        businessType: profileBusinessType,
+        contactInfo: profileContactInfo,
+        address: profileAddress,
+        categories: profileCategories.split(",").map(c => c.trim()).filter(Boolean),
+        fabricTypes: profileFabricTypes.split(",").map(t => t.trim()).filter(Boolean),
+        moq: Number(profileMoq),
+        logoUrl: profileLogoUrl,
       });
       setSupplier(updated);
       setIsEditingProfile(false);
@@ -463,6 +484,18 @@ function SupplierDashboard() {
                     <Label className="text-xs">Mill Name</Label>
                     <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} className="h-9 mt-1" required />
                   </div>
+                  <div>
+                    <Label className="text-xs">Business Type</Label>
+                    <Input value={profileBusinessType} onChange={(e) => setProfileBusinessType(e.target.value)} className="h-9 mt-1" placeholder="e.g. Fabric mill, Vertical manufacturer" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Contact Info (Email/Secondary Phone)</Label>
+                    <Input value={profileContactInfo} onChange={(e) => setProfileContactInfo(e.target.value)} className="h-9 mt-1" placeholder="e.g. contact@mill.com" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Street Address</Label>
+                    <Input value={profileAddress} onChange={(e) => setProfileAddress(e.target.value)} className="h-9 mt-1" placeholder="e.g. 45 Textile Park" />
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label className="text-xs">City</Label>
@@ -473,9 +506,27 @@ function SupplierDashboard() {
                       <Input value={profileCountry} onChange={(e) => setProfileCountry(e.target.value)} className="h-9 mt-1" required />
                     </div>
                   </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Phone</Label>
+                      <Input value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} className="h-9 mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Standard MOQ (metres)</Label>
+                      <Input type="number" value={profileMoq} onChange={(e) => setProfileMoq(Number(e.target.value))} className="h-9 mt-1" />
+                    </div>
+                  </div>
                   <div>
-                    <Label className="text-xs">Phone</Label>
-                    <Input value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} className="h-9 mt-1" />
+                    <Label className="text-xs">Logo Image URL</Label>
+                    <Input value={profileLogoUrl} onChange={(e) => setProfileLogoUrl(e.target.value)} className="h-9 mt-1" placeholder="e.g. https://example.com/logo.png" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Categories (comma-separated)</Label>
+                    <Input value={profileCategories} onChange={(e) => setProfileCategories(e.target.value)} className="h-9 mt-1" placeholder="e.g. Cotton, Linen" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Fabric Types Offered (comma-separated)</Label>
+                    <Input value={profileFabricTypes} onChange={(e) => setProfileFabricTypes(e.target.value)} className="h-9 mt-1" placeholder="e.g. Wovens, Silk" />
                   </div>
                   <div>
                     <Label className="text-xs">Operational Hours</Label>
@@ -491,15 +542,33 @@ function SupplierDashboard() {
                   </div>
                 </form>
               ) : (
-                <div className="space-y-3.5 text-xs text-muted-foreground">
-                  <p><strong>Mill Name</strong>: {supplier?.name}</p>
-                  <p><strong>Location</strong>: {supplier?.city}, {supplier?.country}</p>
-                  {supplier?.phone && <p><strong>Phone</strong>: {supplier.phone}</p>}
-                  <p><strong>Response rate</strong>: {supplier?.responseHours}h average</p>
-                  {supplier?.about && (
+                <div className="space-y-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3">
+                    {supplier?.logoUrl && (
+                      <img src={supplier.logoUrl} alt="Mill Logo" className="size-10 rounded-lg object-cover border border-border" />
+                    )}
                     <div>
-                      <strong className="block text-foreground mt-2">Capabilities:</strong>
-                      <p className="mt-1 leading-relaxed">{supplier.about}</p>
+                      <p className="text-sm font-semibold text-foreground">{supplier?.name}</p>
+                      <p className="text-[10px] text-primary font-medium">{supplier?.businessType || "Verified Textile Mill"}</p>
+                    </div>
+                  </div>
+                  <Separator className="my-2" />
+                  <p><strong>Location</strong>: {supplier?.city}, {supplier?.country}</p>
+                  {supplier?.address && <p><strong>Street Address</strong>: {supplier.address}</p>}
+                  {supplier?.phone && <p><strong>Phone</strong>: {supplier.phone}</p>}
+                  {supplier?.contactInfo && <p><strong>Contact Info</strong>: {supplier.contactInfo}</p>}
+                  <p><strong>Response rate</strong>: {supplier?.responseHours}h average</p>
+                  {supplier?.moq !== undefined && <p><strong>Standard MOQ</strong>: {supplier.moq} m</p>}
+                  {supplier?.categories && supplier.categories.length > 0 && (
+                    <p><strong>Categories</strong>: {supplier.categories.join(", ")}</p>
+                  )}
+                  {supplier?.fabricTypes && supplier.fabricTypes.length > 0 && (
+                    <p><strong>Fabric Types</strong>: {supplier.fabricTypes.join(", ")}</p>
+                  )}
+                  {supplier?.about && (
+                    <div className="pt-2">
+                      <strong className="block text-foreground mb-1">Capabilities:</strong>
+                      <p className="leading-relaxed">{supplier.about}</p>
                     </div>
                   )}
                 </div>

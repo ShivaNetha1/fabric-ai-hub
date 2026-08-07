@@ -123,6 +123,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+import { useAuth } from "@/lib/auth-context";
+import { useNavigate } from "@tanstack/react-router";
+
+function AuthRedirectEnforcer({ children, pathname }: { children: ReactNode; pathname: string }) {
+  const { user, profile, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading) return;
+
+    // 1. If user is logged in but onboarding is incomplete, restrict them to onboarding/auth
+    if (user && profile && !profile.onboarding_completed) {
+      if (pathname !== "/onboarding" && pathname !== "/auth") {
+        navigate({ to: "/onboarding" });
+      }
+    }
+
+    // 2. If user is logged in and onboarding is completed, prevent visiting onboarding
+    if (user && profile && profile.onboarding_completed && pathname === "/onboarding") {
+      navigate({
+        to: profile.role === "supplier" ? "/dashboard/supplier" : "/dashboard/buyer"
+      });
+    }
+  }, [user, profile, loading, pathname, navigate]);
+
+  return <>{children}</>;
+}
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
@@ -146,24 +174,26 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <ScrollProgress />
-          <SiteNav />
-          <AnimatePresence mode="wait">
-            <motion.main
-              key={pathname}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="min-h-screen"
-            >
-              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-              <Outlet />
-            </motion.main>
-          </AnimatePresence>
-          {bare ? null : <SiteFooter />}
-          <AiAssistant />
-          <Toaster position="bottom-left" />
+          <AuthRedirectEnforcer pathname={pathname}>
+            <ScrollProgress />
+            <SiteNav />
+            <AnimatePresence mode="wait">
+              <motion.main
+                key={pathname}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="min-h-screen"
+              >
+                {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+                <Outlet />
+              </motion.main>
+            </AnimatePresence>
+            {bare ? null : <SiteFooter />}
+            <AiAssistant />
+            <Toaster position="bottom-left" />
+          </AuthRedirectEnforcer>
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>

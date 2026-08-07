@@ -47,11 +47,12 @@ const supplierSteps: OnboardingStep[] = [
   { key: "categories", q: "Which product categories do you list?", options: ["Cotton & Denim", "Silk & luxury", "Linen & hemp", "Wool & suiting"] },
   { key: "fabricTypes", q: "Which types of fabrics do you offer?", options: ["Wovens", "Knits", "Silk", "Technical textiles"] },
   { key: "moq", q: "What is your standard Minimum Order Quantity (MOQ)?", options: ["No MOQ", "Under 100 m", "100 – 300 m", "300 m+"] },
-  { key: "about", q: "Any additional business information buyers should know?", isInput: true, placeholder: "e.g., 3 generations of air-jet weaving, quality certifications, export capacity..." }
+  { key: "about", q: "Any additional business information buyers should know?", isInput: true, placeholder: "e.g., 3 generations of air-jet weaving, quality certifications, export capacity..." },
+  { key: "logoUrl", q: "Company Logo URL (optional, press Enter or Continue to skip)", isInput: true, placeholder: "e.g., https://example.com/logo.png" }
 ];
 
 function Onboarding() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const [step, setStep] = React.useState(0);
   const [answers, setAnswers] = React.useState<string[]>([]);
   const [inputValue, setInputValue] = React.useState("");
@@ -79,6 +80,7 @@ function Onboarding() {
         const moqText = ans[7] || "No MOQ";
         const moqVal = moqText === "No MOQ" ? 0 : moqText === "Under 100 m" ? 50 : moqText === "100 – 300 m" ? 150 : 300;
         const aboutText = ans[8] || "";
+        const logoUrlVal = ans[9] || "";
 
         const addressParts = address.split(",").map((part) => part.trim()).filter(Boolean);
         const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2] : "Unknown City";
@@ -96,6 +98,7 @@ function Onboarding() {
           fabric_types: [fabricTypeVal],
           moq: moqVal,
           about: aboutText,
+          logo_url: logoUrlVal,
           verified: true,
           rating: 5.0,
           orders_count: 0,
@@ -118,11 +121,22 @@ function Onboarding() {
         if (error) throw error;
         toast.success("Sourcing preferences saved to your profile!");
       }
+
+      // Mark onboarding completed in profiles
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ onboarding_completed: true })
+        .eq("id", user.id);
+
+      if (profileError) throw profileError;
+
+      // Sync local context state
+      await refreshProfile();
     } catch (err: any) {
       console.error("Error saving preferences:", err.message);
       toast.error("Failed to sync preferences to account.");
     }
-  }, [user, profile]);
+  }, [user, profile, refreshProfile]);
 
   const handleSelect = async (option: string) => {
     const nextAnswers = [...answers, option];
@@ -237,25 +251,28 @@ function Onboarding() {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter" && inputValue.trim()) {
-                            e.preventDefault();
-                            handleSelect(inputValue.trim());
-                            setInputValue("");
+                          const isOptional = current.key === "logoUrl";
+                          if (e.key === "Enter") {
+                            if (inputValue.trim() || isOptional) {
+                              e.preventDefault();
+                              handleSelect(inputValue.trim());
+                              setInputValue("");
+                            }
                           }
                         }}
                         className="h-12 text-sm bg-surface"
-                        required
+                        required={current.key !== "logoUrl"}
                       />
                       <Button 
                         size="lg" 
                         className="w-full sm:w-auto"
-                        disabled={!inputValue.trim()}
+                        disabled={current.key !== "logoUrl" && !inputValue.trim()}
                         onClick={() => {
                           handleSelect(inputValue.trim());
                           setInputValue("");
                         }}
                       >
-                        Continue
+                        {current.key === "logoUrl" && !inputValue.trim() ? "Skip" : "Continue"}
                       </Button>
                     </div>
                   ) : (

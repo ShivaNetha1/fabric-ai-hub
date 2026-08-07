@@ -40,6 +40,11 @@ function BuyerDashboard() {
   const [profileName, setProfileName] = React.useState("");
   const [companyName, setCompanyName] = React.useState("");
   const [website, setWebsite] = React.useState("");
+  const [industry, setIndustry] = React.useState("");
+  const [businessType, setBusinessType] = React.useState("");
+  const [typicalBudget, setTypicalBudget] = React.useState("");
+  const [preferredMaterials, setPreferredMaterials] = React.useState("");
+  const [typicalVolume, setTypicalVolume] = React.useState("");
   const [isSavingProfile, setIsSavingProfile] = React.useState(false);
 
   React.useEffect(() => {
@@ -72,6 +77,11 @@ function BuyerDashboard() {
             setBuyerData(data);
             setCompanyName(data.company_name || "");
             setWebsite(data.website || "");
+            setIndustry(data.industry || "");
+            setBusinessType(data.business_type || "");
+            setTypicalBudget(data.typical_budget || "");
+            setPreferredMaterials(data.preferred_materials?.join(", ") || "");
+            setTypicalVolume(data.typical_volume || "");
           }
         });
       
@@ -107,13 +117,18 @@ function BuyerDashboard() {
 
       if (profileError) throw profileError;
 
-      // 2. Update buyers table company_name & website
+      // 2. Update buyers table
       const { error: buyerError } = await supabase
         .from("buyers")
         .upsert({
           id: user.id,
           company_name: companyName,
           website: website,
+          industry: industry,
+          business_type: businessType,
+          typical_budget: typicalBudget,
+          preferred_materials: preferredMaterials.split(",").map(m => m.trim()).filter(Boolean),
+          typical_volume: typicalVolume,
         });
 
       if (buyerError) throw buyerError;
@@ -123,6 +138,11 @@ function BuyerDashboard() {
         ...buyerData,
         company_name: companyName,
         website: website,
+        industry: industry,
+        business_type: businessType,
+        typical_budget: typicalBudget,
+        preferred_materials: preferredMaterials.split(",").map(m => m.trim()).filter(Boolean),
+        typical_volume: typicalVolume,
       });
 
       toast.success("Profile updated successfully!");
@@ -305,17 +325,63 @@ function BuyerDashboard() {
                     />
                   </div>
 
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground">What you manufacture (Industry)</label>
+                    <input 
+                      type="text"
+                      value={industry} 
+                      onChange={(e) => setIndustry(e.target.value)} 
+                      placeholder="e.g. Apparel & fashion" 
+                      className="w-full mt-1.5 border border-border bg-background rounded-xl px-4 py-2.5 outline-none focus:border-primary/50 text-sm" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground">Business Type</label>
+                    <input 
+                      type="text"
+                      value={businessType} 
+                      onChange={(e) => setBusinessType(e.target.value)} 
+                      placeholder="e.g. Emerging label" 
+                      className="w-full mt-1.5 border border-border bg-background rounded-xl px-4 py-2.5 outline-none focus:border-primary/50 text-sm" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground">Typical Budget per Metre</label>
+                    <input 
+                      type="text"
+                      value={typicalBudget} 
+                      onChange={(e) => setTypicalBudget(e.target.value)} 
+                      placeholder="e.g. ₹300 – ₹800" 
+                      className="w-full mt-1.5 border border-border bg-background rounded-xl px-4 py-2.5 outline-none focus:border-primary/50 text-sm" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground">Preferred Materials (comma-separated)</label>
+                    <input 
+                      type="text"
+                      value={preferredMaterials} 
+                      onChange={(e) => setPreferredMaterials(e.target.value)} 
+                      placeholder="e.g. Cotton & blends, Silk" 
+                      className="w-full mt-1.5 border border-border bg-background rounded-xl px-4 py-2.5 outline-none focus:border-primary/50 text-sm" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground">Typical Order Volume</label>
+                    <input 
+                      type="text"
+                      value={typicalVolume} 
+                      onChange={(e) => setTypicalVolume(e.target.value)} 
+                      placeholder="e.g. Under 200 m" 
+                      className="w-full mt-1.5 border border-border bg-background rounded-xl px-4 py-2.5 outline-none focus:border-primary/50 text-sm" 
+                    />
+                  </div>
+
                   <div className="rounded-2xl border border-border bg-surface p-4 space-y-3 mt-4 text-xs text-muted-foreground">
                     <p><strong>Account Email</strong>: {user.email}</p>
-                    {buyerData?.sourcing_for && (
-                      <p><strong>Sourcing For</strong>: {buyerData.sourcing_for.join(", ")}</p>
-                    )}
-                    {buyerData?.preferred_materials && (
-                      <p><strong>Preferred Materials</strong>: {buyerData.preferred_materials.join(", ")}</p>
-                    )}
-                    {buyerData?.moq_preference && (
-                      <p><strong>MOQ Preference</strong>: {buyerData.moq_preference} metres</p>
-                    )}
                   </div>
 
                   <div className="flex gap-2 justify-end pt-4">

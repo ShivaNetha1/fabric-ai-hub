@@ -108,7 +108,7 @@ function Auth() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth?mode=signin${role === "Supplier" ? "&redirectTo=/onboarding" : ""}`,
+            emailRedirectTo: `${window.location.origin}/onboarding`,
             data: {
               role: role.toLowerCase(),
               full_name: fullName,

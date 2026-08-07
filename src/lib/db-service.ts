@@ -184,6 +184,12 @@ export const dbService = {
     if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
     if (updates.categories !== undefined) dbUpdates.categories = updates.categories;
     if (updates.certificates !== undefined) dbUpdates.certificates = updates.certificates;
+    if (updates.businessType !== undefined) dbUpdates.business_type = updates.businessType;
+    if (updates.contactInfo !== undefined) dbUpdates.contact_info = updates.contactInfo;
+    if (updates.address !== undefined) dbUpdates.address = updates.address;
+    if (updates.fabricTypes !== undefined) dbUpdates.fabric_types = updates.fabricTypes;
+    if (updates.moq !== undefined) dbUpdates.moq = updates.moq;
+    if (updates.logoUrl !== undefined) dbUpdates.logo_url = updates.logoUrl;
 
     const { data, error } = await supabase
       .from("suppliers")
@@ -446,6 +452,12 @@ export const dbService = {
       hours: dbSupplier.hours || "Mon–Fri · 09:00–18:00 Local",
       email: dbSupplier.email || "contact@mill.com",
       phone: dbSupplier.phone || "",
+      businessType: dbSupplier.business_type || "",
+      contactInfo: dbSupplier.contact_info || "",
+      address: dbSupplier.address || "",
+      fabricTypes: dbSupplier.fabric_types || [],
+      moq: dbSupplier.moq || 0,
+      logoUrl: dbSupplier.logo_url || "",
     };
   },
 

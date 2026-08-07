@@ -377,3 +377,21 @@ begin
   limit match_count;
 end;
 $$;
+
+-- ==========================================
+-- ONBOARDING FLOW MIGRATION
+-- ==========================================
+
+-- Add onboarding completion flag to profiles
+alter table public.profiles add column if not exists onboarding_completed boolean default false not null;
+
+-- Add MOQ and company logo columns to suppliers
+alter table public.suppliers add column if not exists moq integer default 0;
+alter table public.suppliers add column if not exists logo_url text;
+
+-- Add RLS insert policy fallbacks
+create policy "Allow users to insert their own supplier record" on public.suppliers
+  for insert with check (auth.uid() = id);
+
+create policy "Allow users to insert their own buyer record" on public.buyers
+  for insert with check (auth.uid() = id);

@@ -51,6 +51,12 @@ export interface Supplier {
   hours: string;
   email: string;
   phone: string;
+  businessType?: string;
+  contactInfo?: string;
+  address?: string;
+  fabricTypes?: string[];
+  moq?: number;
+  logoUrl?: string;
 }
 
 export const suppliers: Supplier[] = [

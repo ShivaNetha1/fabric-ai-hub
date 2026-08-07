@@ -7,6 +7,7 @@ export interface UserProfile {
   email: string;
   role: "buyer" | "supplier";
   full_name: string;
+  onboarding_completed: boolean;
 }
 
 interface AuthContextType {
@@ -14,6 +15,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<UserProfile | null>;
 }
 
 const AuthContext = React.createContext<AuthContextType>({
@@ -21,6 +23,7 @@ const AuthContext = React.createContext<AuthContextType>({
   profile: null,
   loading: true,
   signOut: async () => {},
+  refreshProfile: async () => null,
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -39,14 +42,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         console.error("Error fetching profile:", error.message);
         setProfile(null);
+        return null;
       } else {
-        setProfile(data as UserProfile);
+        const mapped = data as UserProfile;
+        setProfile(mapped);
+        return mapped;
       }
     } catch (err) {
       console.error("Failed to load profile:", err);
       setProfile(null);
+      return null;
     }
   }, []);
+
+  const refreshProfile = React.useCallback(async () => {
+    if (!user) return null;
+    return fetchProfile(user.id);
+  }, [user, fetchProfile]);
 
   React.useEffect(() => {
     // Check initial session
@@ -92,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
