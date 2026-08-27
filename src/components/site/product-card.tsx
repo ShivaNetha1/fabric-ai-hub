@@ -26,9 +26,13 @@ export function ProductCard({
 }) {
   const supplier = getSupplier(product.supplierId);
   const [saved, setSaved] = React.useState(false);
+  const [selectedColorIdx, setSelectedColorIdx] = React.useState(0);
   const cart = useCart();
   const ref = React.useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = React.useState({ x: 0, y: 0 });
+
+  const selectedColor = product.colors[selectedColorIdx] || product.colors[0];
+  const displayImage = selectedColor?.image || product.gallery[selectedColorIdx] || product.image;
 
   const handleMove = (e: React.MouseEvent) => {
     const el = ref.current;
@@ -46,10 +50,12 @@ export function ProductCard({
         <Link
           to="/products/$productId"
           params={{ productId: product.id }}
+          target="_blank"
+          rel="noopener noreferrer"
           className="relative w-full shrink-0 overflow-hidden rounded-xl sm:w-56"
         >
           <img
-            src={product.image}
+            src={displayImage}
             alt={product.name}
             loading="lazy"
             className="aspect-4/3 w-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -85,8 +91,8 @@ export function ProductCard({
               size="sm"
               className="ml-auto"
               onClick={() => {
-                cart.add(product.id, product.moq, product.colors[0]?.name ?? "Default");
-                toast.success(`${product.moq} m added to cart`, { description: product.name });
+                cart.add(product.id, product.moq, selectedColor?.name ?? "Default");
+                toast.success(`${product.moq} m added to cart`, { description: `${product.name} (${selectedColor?.name})` });
               }}
             >
               Add to cart
@@ -111,16 +117,18 @@ export function ProductCard({
         <Link
           to="/products/$productId"
           params={{ productId: product.id }}
+          target="_blank"
+          rel="noopener noreferrer"
           className="relative block overflow-hidden"
           aria-label={`View ${product.name}`}
         >
           <img
-            src={product.image}
+            src={displayImage}
             alt={product.name}
             loading="lazy"
             width={900}
             height={720}
-            className="aspect-5/4 w-full object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
+            className="aspect-5/4 w-full object-cover transition-all duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
           />
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-foreground/45 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
           <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
@@ -185,22 +193,39 @@ export function ProductCard({
             <span className="ml-auto shrink-0 font-medium text-foreground">★ {product.rating}</span>
           </div>
           <h3 className="mt-2.5 text-[0.98rem] font-semibold leading-snug">
-            <Link to="/products/$productId" params={{ productId: product.id }}>
+            <Link to="/products/$productId" params={{ productId: product.id }} target="_blank" rel="noopener noreferrer">
               {product.name}
             </Link>
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">{product.subtitle}</p>
 
-          <div className="mt-4 flex items-center gap-1.5">
-            {product.colors.map((col) => (
-              <span
-                key={col.name}
-                title={col.name}
-                className="size-4 rounded-full border border-border-strong"
-                style={{ backgroundColor: col.hex }}
-              />
-            ))}
-            <span className="ml-1 text-[0.7rem] text-subtle">{product.gsm} GSM</span>
+          {/* Colour selection access commented out */}
+          {/* <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              {product.colors.map((col, idx) => (
+                <button
+                  key={col.name}
+                  type="button"
+                  title={`${col.name} - Click to select`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedColorIdx(idx);
+                  }}
+                  className={cn(
+                    "size-4 rounded-full border border-border-strong transition-all duration-200 cursor-pointer hover:scale-125",
+                    selectedColorIdx === idx && "ring-2 ring-primary ring-offset-1 scale-110 border-primary shadow-soft"
+                  )}
+                  style={{ backgroundColor: col.hex }}
+                />
+              ))}
+              <span className="ml-1.5 text-[0.72rem] font-medium text-foreground">{selectedColor?.name}</span>
+            </div>
+            <span className="text-[0.7rem] text-subtle">{product.gsm} GSM</span>
+          </div> */}
+          <div className="mt-4 flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">{product.composition}</span>
+            <span className="text-[0.7rem] text-subtle">{product.gsm} GSM</span>
           </div>
 
           <div className="mt-5 flex items-end justify-between border-t border-border pt-4">
@@ -212,8 +237,8 @@ export function ProductCard({
               size="sm"
               variant="outline"
               onClick={() => {
-                cart.add(product.id, product.moq, product.colors[0]?.name ?? "Default");
-                toast.success(`${product.moq} m added to cart`, { description: product.name });
+                cart.add(product.id, product.moq, selectedColor?.name ?? "Default");
+                toast.success(`${product.moq} m added to cart`, { description: `${product.name} (${selectedColor?.name})` });
               }}
             >
               Add

@@ -1,0 +1,16 @@
+# ==========================================
+# TEXORA B2B TEXTILE MARKETPLACE
+# ==========================================
+#
+# This is a full-stack Node.js / React application built on Vinxi and TanStack Start.
+# There are no Python dependencies required for execution.
+#
+# All packages are Node.js dependencies and are managed via package.json.
+#
+# Core Project Stack:
+# - React: ^18.3.1
+# - TanStack Start / Router: ^1.168.32
+# - Supabase client: ^2.112.0
+# - AI Local Embeddings: @xenova/transformers
+# - LLM Sourcing engine: Groq API
+#

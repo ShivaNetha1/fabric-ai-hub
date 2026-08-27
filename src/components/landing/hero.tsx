@@ -159,6 +159,8 @@ export function Hero() {
               <Link
                 to="/products/$productId"
                 params={{ productId: card.productId }}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block"
               >
                 <div className="glass-strong overflow-hidden rounded-2xl p-2.5 shadow-lift border border-border/10 hover:border-primary/40 hover:shadow-soft transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1">

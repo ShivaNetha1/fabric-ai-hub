@@ -307,14 +307,7 @@ function Auth() {
             </Button>
           </form>
 
-          <div className="my-6 flex items-center gap-4 text-[0.7rem] uppercase tracking-[0.12em] text-subtle">
-            <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {["Google", "Microsoft"].map((p) => (
-              <Button key={p} variant="outline" className="h-11" onClick={() => toast.info(`${p} OAuth integration is a prototype.`)}>{p}</Button>
-            ))}
-          </div>
+
 
           <p className="mt-7 text-center text-xs text-muted-foreground">
             {isSignUp ? "Already have an account?" : "New to Texora?"}{" "}

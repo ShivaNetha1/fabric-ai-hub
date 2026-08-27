@@ -22,7 +22,7 @@ export interface Product {
   moq: number;
   gsm: number;
   widthCm: number;
-  colors: { name: string; hex: string }[];
+  colors: { name: string; hex: string; image?: string }[];
   supplierId: string;
   rating: number;
   reviews: number;
@@ -134,7 +134,7 @@ export const suppliers: Supplier[] = [
   },
 ];
 
-const c = (name: string, hex: string) => ({ name, hex });
+const c = (name: string, hex: string, image?: string) => ({ name, hex, image });
 
 export const products: Product[] = [
   {
@@ -150,7 +150,7 @@ export const products: Product[] = [
     moq: 300,
     gsm: 120,
     widthCm: 148,
-    colors: [c("Ivory", "#F4F1EA"), c("Sky", "#BBD3F0"), c("Slate", "#54617A")],
+    colors: [c("Ivory", "#F4F1EA", cotton), c("Sky", "#BBD3F0", linen), c("Slate", "#54617A", hero)],
     supplierId: "arvind-weaves",
     rating: 4.8,
     reviews: 214,
@@ -176,7 +176,7 @@ export const products: Product[] = [
     moq: 100,
     gsm: 86,
     widthCm: 114,
-    colors: [c("Sapphire", "#1E40AF"), c("Onyx", "#111827"), c("Champagne", "#E8DCC4")],
+    colors: [c("Sapphire", "#1E40AF", silk), c("Onyx", "#111827", hero), c("Champagne", "#E8DCC4", cotton)],
     supplierId: "kanchi-silk",
     rating: 4.9,
     reviews: 96,
@@ -202,7 +202,7 @@ export const products: Product[] = [
     moq: 200,
     gsm: 185,
     widthCm: 150,
-    colors: [c("Sand", "#E3CBA5"), c("Sage", "#9CA98C"), c("Chalk", "#F2EFE9")],
+    colors: [c("Sand", "#E3CBA5", linen), c("Sage", "#9CA98C", hero), c("Chalk", "#F2EFE9", wool)],
     supplierId: "baltic-linen",
     rating: 4.9,
     reviews: 158,
@@ -228,7 +228,7 @@ export const products: Product[] = [
     moq: 400,
     gsm: 458,
     widthCm: 92,
-    colors: [c("Raw Indigo", "#1B2A4A"), c("Washed", "#4A6491")],
+    colors: [c("Raw Indigo", "#1B2A4A", denim), c("Washed", "#4A6491", hero), c("Black", "#1E222A", cotton)],
     supplierId: "arvind-weaves",
     rating: 4.7,
     reviews: 132,
@@ -254,7 +254,7 @@ export const products: Product[] = [
     moq: 60,
     gsm: 260,
     widthCm: 152,
-    colors: [c("Charcoal", "#333A45"), c("Navy", "#1F2A44"), c("Grey Mélange", "#8A909B")],
+    colors: [c("Charcoal", "#333A45", wool), c("Navy", "#1F2A44", hero), c("Grey Mélange", "#8A909B", silk)],
     supplierId: "milano-lana",
     rating: 5.0,
     reviews: 74,
@@ -280,7 +280,7 @@ export const products: Product[] = [
     moq: 250,
     gsm: 240,
     widthCm: 145,
-    colors: [c("Olive", "#7C8460"), c("Ecru", "#EDE6D8"), c("Ink", "#2A3242")],
+    colors: [c("Olive", "#7C8460", hero), c("Ecru", "#EDE6D8", linen), c("Ink", "#2A3242", cotton)],
     supplierId: "baltic-linen",
     rating: 4.6,
     reviews: 88,
@@ -306,7 +306,7 @@ export const products: Product[] = [
     moq: 150,
     gsm: 68,
     widthCm: 110,
-    colors: [c("Blush", "#EBD3D0"), c("Mist", "#D8E1E8"), c("Ivory", "#F6F2EA")],
+    colors: [c("Blush", "#EBD3D0", cotton), c("Mist", "#D8E1E8", silk), c("Ivory", "#F6F2EA", hero)],
     supplierId: "kanchi-silk",
     rating: 4.7,
     reviews: 61,
@@ -332,7 +332,7 @@ export const products: Product[] = [
     moq: 500,
     gsm: 180,
     widthCm: 150,
-    colors: [c("Black", "#14161C"), c("Storm", "#4C5563"), c("Forest", "#26453A")],
+    colors: [c("Black", "#14161C", denim), c("Storm", "#4C5563", wool), c("Forest", "#26453A", hero)],
     supplierId: "arvind-weaves",
     rating: 4.5,
     reviews: 190,
@@ -358,7 +358,7 @@ export const products: Product[] = [
     moq: 50,
     gsm: 340,
     widthCm: 150,
-    colors: [c("Graphite", "#3A3F49"), c("Camel", "#B08A5E")],
+    colors: [c("Graphite", "#3A3F49", wool), c("Camel", "#B08A5E", silk), c("Charcoal", "#24272E", hero)],
     supplierId: "milano-lana",
     rating: 4.9,
     reviews: 42,
@@ -384,7 +384,7 @@ export const products: Product[] = [
     moq: 300,
     gsm: 160,
     widthCm: 180,
-    colors: [c("Bone", "#EFEAE1"), c("Clay", "#C08C74"), c("Deep Sea", "#243B4A")],
+    colors: [c("Bone", "#EFEAE1", linen), c("Clay", "#C08C74", cotton), c("Deep Sea", "#243B4A", hero)],
     supplierId: "baltic-linen",
     rating: 4.6,
     reviews: 118,
@@ -410,7 +410,7 @@ export const products: Product[] = [
     moq: 40,
     gsm: 210,
     widthCm: 112,
-    colors: [c("Royal", "#22357A"), c("Vermilion", "#B03A2E"), c("Emerald", "#1E5945")],
+    colors: [c("Royal", "#22357A", silk), c("Vermilion", "#B03A2E", hero), c("Emerald", "#1E5945", wool)],
     supplierId: "kanchi-silk",
     rating: 5.0,
     reviews: 37,
@@ -436,7 +436,7 @@ export const products: Product[] = [
     moq: 250,
     gsm: 145,
     widthCm: 147,
-    colors: [c("Indigo Wash", "#5B7290"), c("Stone", "#B9BCB4")],
+    colors: [c("Indigo Wash", "#5B7290", cotton), c("Stone", "#B9BCB4", denim), c("Sage", "#9CA98C", hero)],
     supplierId: "arvind-weaves",
     rating: 4.7,
     reviews: 103,

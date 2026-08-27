@@ -10,11 +10,14 @@ import {
   Truck,
   GitCompare,
   Star,
+  ArrowLeft,
 } from "lucide-react";
+import { useRouter, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ProductCard } from "@/components/site/product-card";
+import { QuickViewModal } from "@/components/site/quick-view-modal";
 import { Reveal } from "@/components/site/reveal";
 import { getProduct, getSupplier, products, inr, type Product } from "@/lib/data";
 import { useCart } from "@/lib/cart";
@@ -50,10 +53,15 @@ function ProductDetail() {
   const [active, setActive] = React.useState(0);
   const [colour, setColour] = React.useState(product.colors[0]?.name ?? "");
   const [metres, setMetres] = React.useState(product.moq);
+  const [quickViewProduct, setQuickViewProduct] = React.useState<Product | null>(null);
   const cart = useCart();
 
   const related = products.filter((p) => p.id !== product.id && p.material === product.material).slice(0, 3);
   const fallback = products.filter((p) => p.id !== product.id).slice(0, 3);
+
+  const selectedColorObj = product.colors.find((c) => c.name === colour) || product.colors[0];
+  const selectedColorIdx = product.colors.findIndex((c) => c.name === colour);
+  const displayMainImage = selectedColorObj?.image || product.gallery[selectedColorIdx >= 0 ? selectedColorIdx : active] || product.image;
 
   return (
     <div className="mx-auto max-w-[88rem] px-6 pb-24 pt-32">
@@ -62,21 +70,21 @@ function ProductDetail() {
         <span className="px-2">/</span>
         <Link to="/marketplace" className="hover:text-foreground">Marketplace</Link>
         <span className="px-2">/</span>
-        <span className="text-foreground">{product.material}</span>
+        <span className="text-foreground">{product.name}</span>
       </nav>
 
       <div className="mt-8 grid gap-12 lg:grid-cols-[1.15fr_0.85fr]">
         <div>
           <motion.div
-            key={active}
+            key={displayMainImage}
             initial={{ opacity: 0.4, scale: 0.99 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
             className="group relative overflow-hidden rounded-3xl border border-border bg-card"
           >
             <img
-              src={product.gallery[active]}
-              alt={product.name}
+              src={displayMainImage}
+              alt={`${product.name} - ${colour}`}
               width={900}
               height={720}
               className="aspect-4/3 w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
@@ -187,25 +195,31 @@ function ProductDetail() {
                 <span className="text-sm font-normal text-subtle"> / metre</span>
               </p>
 
-              <div className="mt-6">
+              {/* Colourway selection access commented out */}
+              {/* <div className="mt-6">
                 <p className="text-xs uppercase tracking-[0.1em] text-subtle">Colourway</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {product.colors.map((c) => (
+                  {product.colors.map((c, i) => (
                     <button
                       key={c.name}
-                      onClick={() => setColour(c.name)}
+                      onClick={() => {
+                        setColour(c.name);
+                        setActive(i);
+                      }}
                       aria-pressed={colour === c.name}
                       className={cn(
-                        "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-all",
-                        colour === c.name ? "border-primary bg-accent" : "border-border hover:border-border-strong",
+                        "flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs transition-all cursor-pointer",
+                        colour === c.name
+                          ? "border-primary bg-accent font-semibold text-foreground ring-2 ring-primary/30"
+                          : "border-border text-muted-foreground hover:border-border-strong",
                       )}
                     >
-                      <span className="size-3.5 rounded-full border border-border-strong" style={{ backgroundColor: c.hex }} />
+                      <span className="size-3.5 rounded-full border border-border-strong shadow-xs" style={{ backgroundColor: c.hex }} />
                       {c.name}
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
               <div className="mt-6">
                 <label htmlFor="metres" className="text-xs uppercase tracking-[0.1em] text-subtle">
@@ -307,11 +321,21 @@ function ProductDetail() {
         <Reveal className="mt-8 max-w-none">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {(related.length ? related : fallback).map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard
+                key={p.id}
+                product={p}
+                onQuickView={(prod) => setQuickViewProduct(prod)}
+              />
             ))}
           </div>
         </Reveal>
       </section>
+
+      {/* Quick View Modal */}
+      <QuickViewModal
+        product={quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+      />
     </div>
   );
 }

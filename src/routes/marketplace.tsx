@@ -7,11 +7,39 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { MeshBackground } from "@/components/site/mesh-background";
 import { ProductCard, ProductCardSkeleton } from "@/components/site/product-card";
+import { QuickViewModal } from "@/components/site/quick-view-modal";
 import { dbService } from "@/lib/db-service";
 import { type Product, materials, suppliers, inr } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
+interface MarketplaceSearch {
+  material?: string;
+  query?: string;
+  maxPrice?: number;
+  maxMoq?: number;
+  supplierIds?: string[];
+  sustainableOnly?: boolean;
+  view?: "grid" | "list";
+  visible?: number;
+}
+
 export const Route = createFileRoute("/marketplace")({
+  validateSearch: (search: Record<string, unknown>): MarketplaceSearch => {
+    return {
+      material: typeof search.material === "string" ? search.material : "All",
+      query: typeof search.query === "string" ? search.query : "",
+      maxPrice: search.maxPrice ? Number(search.maxPrice) : 3500,
+      maxMoq: search.maxMoq ? Number(search.maxMoq) : 500,
+      supplierIds: Array.isArray(search.supplierIds)
+        ? (search.supplierIds as string[])
+        : typeof search.supplierIds === "string" && search.supplierIds
+        ? (search.supplierIds as string).split(",")
+        : [],
+      sustainableOnly: Boolean(search.sustainableOnly),
+      view: (search.view as "grid" | "list") || "grid",
+      visible: search.visible ? Number(search.visible) : 8,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Marketplace — Browse Premium Verified Fabrics | Texora" },
@@ -33,16 +61,28 @@ export const Route = createFileRoute("/marketplace")({
 const chips = ["All", ...materials];
 
 function Marketplace() {
-  const [view, setView] = React.useState<"grid" | "list">("grid");
-  const [material, setMaterial] = React.useState("All");
-  const [maxPrice, setMaxPrice] = React.useState(3500);
-  const [maxMoq, setMaxMoq] = React.useState(500);
-  const [supplierIds, setSupplierIds] = React.useState<string[]>([]);
-  const [sustainableOnly, setSustainableOnly] = React.useState(false);
-  const [query, setQuery] = React.useState("");
+  const searchParams = Route.useSearch();
+  const navigate = Route.useNavigate();
+
+  const material = searchParams.material ?? "All";
+  const query = searchParams.query ?? "";
+  const maxPrice = searchParams.maxPrice ?? 3500;
+  const maxMoq = searchParams.maxMoq ?? 500;
+  const supplierIds = searchParams.supplierIds ?? [];
+  const sustainableOnly = searchParams.sustainableOnly ?? false;
+  const view = searchParams.view ?? "grid";
+  const visible = searchParams.visible ?? 8;
+
+  const updateSearch = (newSearch: Partial<MarketplaceSearch>) => {
+    navigate({
+      search: (prev) => ({ ...prev, ...newSearch }),
+      replace: true,
+    });
+  };
+
   const [productsList, setProductsList] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [visible, setVisible] = React.useState(8);
+  const [quickViewProduct, setQuickViewProduct] = React.useState<Product | null>(null);
 
   React.useEffect(() => {
     Promise.all([
@@ -92,14 +132,11 @@ function Marketplace() {
             <Search className="size-4 shrink-0 text-subtle" />
             <input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => updateSearch({ query: e.target.value })}
               placeholder="Breathable summer shirting under ₹300 with GOTS…"
               aria-label="Search fabrics"
               className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-subtle"
             />
-            {/* <Button variant="ghost" size="icon" aria-label="Voice search">
-              <Mic />
-            </Button> */}
             <Button size="sm" className="shrink-0 rounded-full px-5">
               Search
             </Button>
@@ -109,7 +146,7 @@ function Marketplace() {
             {chips.map((c) => (
               <button
                 key={c}
-                onClick={() => setMaterial(c)}
+                onClick={() => updateSearch({ material: c })}
                 aria-pressed={material === c}
                 className={cn(
                   "rounded-full px-4 py-2 text-xs font-medium transition-all duration-300",
@@ -143,7 +180,7 @@ function Marketplace() {
                   min={200}
                   max={3500}
                   step={50}
-                  onValueChange={(v) => setMaxPrice(v[0] ?? 3500)}
+                  onValueChange={(v) => updateSearch({ maxPrice: v[0] ?? 3500 })}
                 />
               </div>
               <div>
@@ -156,7 +193,7 @@ function Marketplace() {
                   min={40}
                   max={500}
                   step={10}
-                  onValueChange={(v) => setMaxMoq(v[0] ?? 500)}
+                  onValueChange={(v) => updateSearch({ maxMoq: v[0] ?? 500 })}
                 />
               </div>
 
@@ -169,9 +206,11 @@ function Marketplace() {
                         id={s.id}
                         checked={supplierIds.includes(s.id)}
                         onCheckedChange={(c) =>
-                          setSupplierIds((prev) =>
-                            c ? [...prev, s.id] : prev.filter((x) => x !== s.id),
-                          )
+                          updateSearch({
+                            supplierIds: c
+                              ? [...supplierIds, s.id]
+                              : supplierIds.filter((x) => x !== s.id),
+                          })
                         }
                       />
                       <Label htmlFor={s.id} className="text-sm font-normal text-muted-foreground">
@@ -186,7 +225,7 @@ function Marketplace() {
                 <Checkbox
                   id="sustainable"
                   checked={sustainableOnly}
-                  onCheckedChange={(c) => setSustainableOnly(Boolean(c))}
+                  onCheckedChange={(c) => updateSearch({ sustainableOnly: Boolean(c) })}
                 />
                 <Label htmlFor="sustainable" className="text-sm font-normal text-muted-foreground">
                   Sustainable only
@@ -197,14 +236,17 @@ function Marketplace() {
                 variant="ghost"
                 size="sm"
                 className="w-full"
-                onClick={() => {
-                  setMaterial("All");
-                  setMaxPrice(3500);
-                  setMaxMoq(500);
-                  setSupplierIds([]);
-                  setSustainableOnly(false);
-                  setQuery("");
-                }}
+                onClick={() =>
+                  updateSearch({
+                    material: "All",
+                    maxPrice: 3500,
+                    maxMoq: 500,
+                    supplierIds: [],
+                    sustainableOnly: false,
+                    query: "",
+                    visible: 8,
+                  })
+                }
               >
                 Reset filters
               </Button>
@@ -221,7 +263,7 @@ function Marketplace() {
                 {(["grid", "list"] as const).map((v) => (
                   <button
                     key={v}
-                    onClick={() => setView(v)}
+                    onClick={() => updateSearch({ view: v })}
                     aria-label={`${v} view`}
                     aria-pressed={view === v}
                     className={cn(
@@ -250,7 +292,12 @@ function Marketplace() {
                   )}
                 >
                   {shown.map((p) => (
-                    <ProductCard key={p.id} product={p} view={view} />
+                    <ProductCard
+                      key={p.id}
+                      product={p}
+                      view={view}
+                      onQuickView={(prod) => setQuickViewProduct(prod)}
+                    />
                   ))}
                 </div>
                 {shown.length === 0 ? (
@@ -260,7 +307,7 @@ function Marketplace() {
                 ) : null}
                 {visible < filtered.length ? (
                   <div className="mt-12 text-center">
-                    <Button variant="outline" size="lg" onClick={() => setVisible((v) => v + 6)}>
+                    <Button variant="outline" size="lg" onClick={() => updateSearch({ visible: visible + 6 })}>
                       Load more fabrics
                     </Button>
                   </div>
@@ -270,6 +317,12 @@ function Marketplace() {
           </div>
         </div>
       </section>
+
+      {/* Quick View Modal */}
+      <QuickViewModal
+        product={quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+      />
     </div>
   );
 }

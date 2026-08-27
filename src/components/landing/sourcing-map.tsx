@@ -2,42 +2,75 @@ import { motion } from "motion/react";
 import { SectionHeading } from "@/components/site/reveal";
 
 const nodes = [
-  { id: "Ahmedabad", x: 68, y: 46, size: 7 },
-  { id: "Kanchipuram", x: 71, y: 56, size: 6 },
-  { id: "Vilnius", x: 53, y: 26, size: 6 },
-  { id: "Biella", x: 48, y: 33, size: 6 },
-  { id: "Porto", x: 43, y: 36, size: 5 },
-  { id: "Istanbul", x: 56, y: 36, size: 5 },
-  { id: "Ho Chi Minh", x: 78, y: 55, size: 5 },
-  { id: "São Paulo", x: 30, y: 70, size: 5 },
-  { id: "New York", x: 22, y: 35, size: 5 },
-  { id: "Osaka", x: 85, y: 40, size: 5 },
+  { id: "Ahmedabad", x: 68, y: 44, size: 7 },
+  { id: "Kanchipuram", x: 70, y: 50, size: 6 },
+  { id: "Vilnius", x: 53, y: 20, size: 6 },
+  { id: "Biella", x: 48, y: 28, size: 6 },
+  { id: "Porto", x: 44, y: 34, size: 5 },
+  { id: "Istanbul", x: 56, y: 34, size: 5 },
+  { id: "Ho Chi Minh", x: 80, y: 50, size: 5 },
+  { id: "São Paulo", x: 32, y: 56, size: 5 },
+  { id: "New York", x: 22, y: 28, size: 5 },
+  { id: "Osaka", x: 89, y: 32, size: 5 },
 ];
 
 const links: [number, number][] = [
-  [0, 2],
-  [0, 3],
-  [1, 8],
-  [2, 8],
-  [3, 9],
-  [0, 6],
-  [7, 8],
-  [5, 0],
+  [8, 4],  // New York -> Porto
+  [4, 3],  // Porto -> Biella
+  [3, 2],  // Biella -> Vilnius
+  [3, 5],  // Biella -> Istanbul
+  [5, 0],  // Istanbul -> Ahmedabad
+  [0, 1],  // Ahmedabad -> Kanchipuram
+  [0, 6],  // Ahmedabad -> Ho Chi Minh
+  [6, 9],  // Ho Chi Minh -> Osaka
+  [7, 4],  // São Paulo -> Porto
 ];
 
-// Pre-calculate the land dots once to prevent React rendering calculations on every cycle
+// High-precision continent matrix generator for an authentic world map silhouette
+const isRealWorldLand = (x: number, y: number): boolean => {
+  // North America
+  if (x >= 6 && x <= 32 && y >= 8 && y <= 22) return true; // Alaska & Canada
+  if (x >= 14 && x <= 30 && y >= 22 && y <= 35) return true; // USA Mainland
+  if (x >= 16 && x <= 25 && y >= 35 && y <= 45) return true; // Mexico & Central America
+  if (x >= 25 && x <= 28 && y >= 36 && y <= 40) return true; // Caribbean Islands
+
+  // South America
+  if (x >= 26 && x <= 38 && y >= 45 && y <= 62) return true; // Northern South America & Brazil
+  if (x >= 28 && x <= 33 && y >= 62 && y <= 76) return true; // Southern Cone
+
+  // Europe
+  if (x >= 43 && x <= 47 && y >= 18 && y <= 25) return true; // UK & Ireland
+  if (x >= 48 && x <= 58 && y >= 10 && y <= 22) return true; // Scandinavia
+  if (x >= 45 && x <= 58 && y >= 22 && y <= 36) return true; // Western & Central Europe
+  if (x >= 44 && x <= 56 && y >= 36 && y <= 42) return true; // Mediterranean
+
+  // Africa
+  if (x >= 44 && x <= 62 && y >= 38 && y <= 48) return true; // North Africa
+  if (x >= 44 && x <= 60 && y >= 48 && y <= 62) return true; // West & Central Africa
+  if (x >= 52 && x <= 62 && y >= 62 && y <= 72) return true; // Southern Africa
+  if (x >= 63 && x <= 66 && y >= 58 && y <= 68) return true; // Madagascar
+
+  // Asia
+  if (x >= 58 && x <= 92 && y >= 10 && y <= 26) return true; // Siberia & Northern Asia
+  if (x >= 56 && x <= 66 && y >= 32 && y <= 44) return true; // Middle East
+  if (x >= 64 && x <= 76 && y >= 34 && y <= 54) return true; // Indian Subcontinent
+  if (x >= 72 && x <= 90 && y >= 26 && y <= 46) return true; // China & East Asia
+  if (x >= 88 && x <= 92 && y >= 28 && y <= 38) return true; // Japan
+  if (x >= 76 && x <= 88 && y >= 46 && y <= 62) return true; // Southeast Asia & Indonesia
+
+  // Australia & Oceania
+  if (x >= 78 && x <= 94 && y >= 60 && y <= 76) return true; // Australia
+  if (x >= 92 && x <= 96 && y >= 70 && y <= 78) return true; // New Zealand
+
+  return false;
+};
+
 const landDots: { x: number; y: number }[] = [];
-for (let r = 0; r < 30; r++) {
-  for (let cIdx = 0; cIdx < 46; cIdx++) {
-    const x = 2 + cIdx * 2.15;
-    const y = 4 + r * 2.4;
-    const inLand =
-      (x > 14 && x < 34 && y > 18 && y < 44) ||
-      (x > 26 && x < 38 && y > 50 && y < 74) ||
-      (x > 40 && x < 60 && y > 18 && y < 38) ||
-      (x > 44 && x < 58 && y > 40 && y < 64) ||
-      (x > 60 && x < 90 && y > 18 && y < 58);
-    if (inLand) {
+for (let r = 0; r < 36; r++) {
+  for (let cIdx = 0; cIdx < 55; cIdx++) {
+    const x = 2 + cIdx * 1.75;
+    const y = 4 + r * 2.1;
+    if (isRealWorldLand(x, y)) {
       landDots.push({ x, y });
     }
   }
@@ -46,14 +79,7 @@ for (let r = 0; r < 30; r++) {
 export function SourcingMap() {
   return (
     <section className="mx-auto mt-40 max-w-[88rem] px-6">
-      <SectionHeading
-        align="center"
-        eyebrow="Global network"
-        title="Mills on four continents, one sourcing surface"
-        description="Live capacity from 1,200 verified suppliers across 48 countries, priced to your delivery port."
-      />
-
-      <div className="relative mt-16 overflow-hidden rounded-3xl border border-border/10 bg-card/40 p-6 sm:p-10 shadow-lift backdrop-blur-md">
+      <div className="relative overflow-hidden rounded-3xl border border-border/10 bg-card/40 p-6 sm:p-10 shadow-lift backdrop-blur-md">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-60"
@@ -62,6 +88,15 @@ export function SourcingMap() {
               "radial-gradient(ellipse 60% 60% at 60% 40%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 70%)",
           }}
         />
+
+        <SectionHeading
+          align="center"
+          eyebrow="Global network"
+          title="Mills on four continents, one sourcing surface"
+          description="Live capacity from 1,200 verified suppliers across 48 countries, priced to your delivery port."
+          className="relative mb-8"
+        />
+
         <svg
           viewBox="0 0 100 80"
           className="relative aspect-2/1 w-full"
@@ -70,9 +105,9 @@ export function SourcingMap() {
         >
           <defs>
             <linearGradient id="lane" x1="0" x2="1">
-              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.05" />
-              <stop offset="50%" stopColor="var(--cyan)" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="var(--violet)" stopOpacity="0.05" />
+              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.1" />
+              <stop offset="50%" stopColor="var(--cyan)" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="var(--violet)" stopOpacity="0.1" />
             </linearGradient>
           </defs>
 
@@ -82,32 +117,11 @@ export function SourcingMap() {
               key={idx}
               cx={dot.x}
               cy={dot.y}
-              r="0.4"
+              r="0.38"
               fill="var(--foreground)"
-              opacity="0.12"
+              opacity="0.15"
             />
           ))}
-
-          {links.map(([a, b], i) => {
-            const from = nodes[a]!;
-            const to = nodes[b]!;
-            const mx = (from.x + to.x) / 2;
-            const my = Math.min(from.y, to.y) - 10;
-            const d = `M ${from.x} ${from.y} Q ${mx} ${my} ${to.x} ${to.y}`;
-            return (
-              <motion.path
-                key={i}
-                d={d}
-                fill="none"
-                stroke="url(#lane)"
-                strokeWidth="0.35"
-                initial={{ pathLength: 0, opacity: 0 }}
-                whileInView={{ pathLength: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1.6, delay: 0.2 + i * 0.12, ease: "easeInOut" }}
-              />
-            );
-          })}
 
           {nodes.map((n, i) => (
             <g key={n.id}>

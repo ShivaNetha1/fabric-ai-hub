@@ -7,6 +7,7 @@ import {
   useRouterState,
   HeadContent,
   Scripts,
+  ScrollRestoration,
 } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, type ReactNode } from "react";
@@ -158,6 +159,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <ScrollRestoration />
         {children}
         <Scripts />
       </body>

@@ -61,12 +61,21 @@ export function ClosingCta() {
               with our conversational setup.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Button size="xl" variant="outline" asChild className="border-white/10 text-primary-foreground hover:bg-white/10">
+              <Button
+                size="xl"
+                asChild
+                className="bg-gradient-to-r from-primary via-cyan-500 to-violet-600 text-white shadow-lift hover:shadow-glow hover:-translate-y-0.5 transition-all duration-300 border-0 font-semibold"
+              >
                 <Link to="/onboarding">
                   Start AI onboarding <ArrowRight />
                 </Link>
               </Button>
-              <Button size="xl" variant="ai" asChild>
+              <Button
+                size="xl"
+                variant="outline"
+                asChild
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/50 backdrop-blur-md font-medium"
+              >
                 <Link to="/marketplace">Browse fabric catalog</Link>
               </Button>
             </div>
