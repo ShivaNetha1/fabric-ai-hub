@@ -17,6 +17,7 @@ import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as DashboardBuyerRouteImport } from './routes/dashboard.buyer'
 import { Route as DashboardSupplierRouteImport } from './routes/dashboard.supplier'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
@@ -63,6 +64,11 @@ const OrdersRoute = OrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 const DashboardBuyerRoute = DashboardBuyerRouteImport.update({
   id: '/dashboard/buyer',
   path: '/dashboard/buyer',
@@ -91,13 +97,14 @@ const SuppliersSupplierIdRoute = SuppliersSupplierIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/inventory': typeof InventoryRoute
   '/marketplace': typeof MarketplaceRoute
   '/onboarding': typeof OnboardingRoute
   '/orders': typeof OrdersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/dashboard/buyer': typeof DashboardBuyerRoute
   '/dashboard/supplier': typeof DashboardSupplierRoute
   '/products/$productId': typeof ProductsProductIdRoute
@@ -106,13 +113,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/inventory': typeof InventoryRoute
   '/marketplace': typeof MarketplaceRoute
   '/onboarding': typeof OnboardingRoute
   '/orders': typeof OrdersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/dashboard/buyer': typeof DashboardBuyerRoute
   '/dashboard/supplier': typeof DashboardSupplierRoute
   '/products/$productId': typeof ProductsProductIdRoute
@@ -122,13 +130,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/inventory': typeof InventoryRoute
   '/marketplace': typeof MarketplaceRoute
   '/onboarding': typeof OnboardingRoute
   '/orders': typeof OrdersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/dashboard/buyer': typeof DashboardBuyerRoute
   '/dashboard/supplier': typeof DashboardSupplierRoute
   '/products/$productId': typeof ProductsProductIdRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/onboarding'
     | '/orders'
+    | '/auth/callback'
     | '/dashboard/buyer'
     | '/dashboard/supplier'
     | '/products/$productId'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/onboarding'
     | '/orders'
+    | '/auth/callback'
     | '/dashboard/buyer'
     | '/dashboard/supplier'
     | '/products/$productId'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/onboarding'
     | '/orders'
+    | '/auth/callback'
     | '/dashboard/buyer'
     | '/dashboard/supplier'
     | '/products/$productId'
@@ -185,7 +197,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   InventoryRoute: typeof InventoryRoute
@@ -257,6 +269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/dashboard/buyer': {
       id: '/dashboard/buyer'
       path: '/dashboard/buyer'
@@ -295,9 +314,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   InventoryRoute: InventoryRoute,

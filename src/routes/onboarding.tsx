@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,9 +53,17 @@ const supplierSteps: OnboardingStep[] = [
 
 function Onboarding() {
   const { user, profile, loading, refreshProfile } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = React.useState(0);
   const [answers, setAnswers] = React.useState<string[]>([]);
   const [inputValue, setInputValue] = React.useState("");
+
+  // Guard: redirect unauthenticated users to sign-in
+  React.useEffect(() => {
+    if (!loading && !user) {
+      navigate({ to: "/auth", search: { mode: "signin" } });
+    }
+  }, [loading, user, navigate]);
 
   const role = profile?.role === "supplier" ? "supplier" : "buyer";
   const activeSteps = role === "supplier" ? supplierSteps : buyerSteps;

@@ -13,6 +13,8 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { useAuth, type UserProfile } from "@/lib/auth-context";
+
 const authSearchSchema = z.object({
   mode: z.string().optional(),
   role: z.string().optional(),
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/auth")({
 function Auth() {
   const navigate = useNavigate();
   const search = Route.useSearch();
+  const { setSessionData } = useAuth();
   const [isSignUp, setIsSignUp] = React.useState(search.mode === "signup");
   const [role, setRole] = React.useState<"Buyer" | "Supplier">(
     search.role === "supplier" ? "Supplier" : "Buyer"
@@ -104,11 +107,12 @@ function Auth() {
 
     try {
       if (isSignUp) {
+        // ── SIGN UP ──
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/onboarding`,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
             data: {
               role: role.toLowerCase(),
               full_name: fullName,
@@ -117,51 +121,114 @@ function Auth() {
           },
         });
 
-        if (error) throw error;
+        if (error) {
+          // Handle "email already registered" case
+          if (error.message?.toLowerCase().includes("already registered") ||
+              error.message?.toLowerCase().includes("already been registered")) {
+            const msg = "This email is already registered. Please sign in instead.";
+            setErrorMsg(msg);
+            toast.error(msg);
+            setLoading(false);
+            return;
+          }
+          throw error;
+        }
+
+        // Supabase may return a user with identities = [] if the email is
+        // already taken but "Confirm email" is enabled. Detect that edge case.
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          const msg = "This email is already registered. Please sign in instead.";
+          setErrorMsg(msg);
+          toast.error(msg);
+          setLoading(false);
+          return;
+        }
 
         if (data.session) {
-          toast.success("Account created and signed in!");
-          if (role === "Supplier") {
-            navigate({ to: "/onboarding" });
-          } else {
-            navigate({ to: "/dashboard/buyer" });
-          }
+          // Email confirmation is disabled in Supabase — user is immediately authenticated
+          const newProfile: UserProfile = {
+            id: data.user.id,
+            email: data.user.email || email,
+            role: role.toLowerCase() as "buyer" | "supplier",
+            full_name: fullName || email.split("@")[0],
+            company_name: companyName,
+            onboarding_completed: false,
+          };
+          setSessionData(data.user, newProfile);
+          toast.success("Account created! Let's set up your profile.");
+          navigate({ to: "/onboarding" });
         } else {
+          // Email confirmation is required — show verification modal
           setRegisteredEmail(email);
           setShowVerificationModal(true);
         }
       } else {
+        // ── SIGN IN ──
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) throw error;
-
-        // Fetch user profile to route correctly
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", data.user?.id)
-          .single();
-
-        if (profileError) throw profileError;
-
-        const dbRole = (profileData.role || "").toLowerCase();
-        const uiRole = role.toLowerCase();
-
-        if (dbRole !== uiRole) {
-          toast.info(`Account registered as ${profileData.role === "supplier" ? "Supplier" : "Buyer"}. Routing to your workspace.`);
-        } else {
-          toast.success("Signed in successfully!");
+        if (error) {
+          if (error.message?.includes("Email not confirmed")) {
+            const msg = "Your email hasn't been confirmed yet. Please check your inbox for the confirmation link.";
+            setErrorMsg(msg);
+            toast.error(msg);
+            setLoading(false);
+            return;
+          } else if (error.message?.includes("Invalid login credentials") || error.status === 400) {
+            const msg = "Invalid email or password. If you don't have an account, please sign up first.";
+            setErrorMsg(msg);
+            toast.error(msg);
+            setLoading(false);
+            return;
+          } else {
+            throw error;
+          }
         }
 
-        navigate({
-          to: dbRole === "supplier" ? "/dashboard/supplier" : "/dashboard/buyer",
-        });
+        // Fetch profile from DB to get role and onboarding status
+        let targetRole = (data.user?.user_metadata?.role || role.toLowerCase()).toLowerCase() as "buyer" | "supplier";
+        let onboardingCompleted = false;
+
+        try {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("role, full_name, onboarding_completed")
+            .eq("id", data.user?.id)
+            .maybeSingle();
+
+          if (profileData?.role) {
+            targetRole = profileData.role.toLowerCase() as "buyer" | "supplier";
+          }
+          if (profileData?.onboarding_completed != null) {
+            onboardingCompleted = profileData.onboarding_completed;
+          }
+        } catch {
+          // If profile query fails, default to not-completed to be safe
+        }
+
+        const userProfile: UserProfile = {
+          id: data.user.id,
+          email: data.user.email || email,
+          role: targetRole,
+          full_name: data.user.user_metadata?.full_name || email.split("@")[0],
+          onboarding_completed: onboardingCompleted,
+        };
+
+        setSessionData(data.user, userProfile);
+        toast.success("Signed in successfully!");
+
+        if (!onboardingCompleted) {
+          navigate({ to: "/onboarding" });
+        } else {
+          navigate({
+            to: targetRole === "supplier" ? "/dashboard/supplier" : "/dashboard/buyer",
+          });
+        }
       }
     } catch (err: any) {
-      const message = err.message || "Authentication failed.";
+      const message = err.message || "Authentication failed. Please check your network or credentials.";
       setErrorMsg(message);
       toast.error(message);
     } finally {
