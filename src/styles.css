@@ -469,3 +469,28 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Custom smooth chatbot scrollbar styling */
+.chatbot-scrollbar {
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chatbot-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chatbot-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chatbot-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+}
+
+.chatbot-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+

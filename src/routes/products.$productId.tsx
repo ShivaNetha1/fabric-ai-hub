@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ProductCard } from "@/components/site/product-card";
 import { QuickViewModal } from "@/components/site/quick-view-modal";
+import { openAiAssistant } from "@/components/site/ai-assistant";
 import { Reveal } from "@/components/site/reveal";
 import { getProduct, getSupplier, products, inr, type Product } from "@/lib/data";
 import { useCart } from "@/lib/cart";
@@ -127,23 +128,23 @@ function ProductDetail() {
             ]} />
           </div>
 
-          <div className="gradient-ring mt-4 rounded-2xl bg-surface p-6">
-            <p className="flex items-center gap-2 text-sm font-semibold">
-              <Sparkles className="size-4 text-primary" /> AI explains this fabric
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {product.description} At {product.moq} m your landed cost lands near{" "}
-              {inr(product.pricePerMetre * product.moq)} before duties, with {product.leadTimeDays}-day
-              production. Closest substitute in the index is within 6% on hand-feel.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => toast("Comparison opened", { description: product.name })}>
-                <GitCompare /> Compare fabrics
-              </Button>
-              <Button variant="ai" size="sm" onClick={() => toast("Texora AI is drafting a spec sheet")}>
-                <Sparkles /> Generate spec sheet
-              </Button>
+          <div className="gradient-ring mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-surface p-6">
+            <div>
+              <p className="flex items-center gap-2 text-sm font-semibold">
+                <Sparkles className="size-4 text-primary" /> AI Sourcing Assistant
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Ask Texora AI about suitability, pricing, MOQ, lead times, or comparisons for {product.name}.
+              </p>
             </div>
+            <Button
+              variant="ai"
+              size="lg"
+              className="w-full sm:w-auto shadow-glow"
+              onClick={() => openAiAssistant({ product, supplier })}
+            >
+              <Sparkles className="size-4" /> Ask Texora AI about this fabric
+            </Button>
           </div>
 
           <section className="mt-12">

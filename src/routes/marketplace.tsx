@@ -25,16 +25,31 @@ interface MarketplaceSearch {
 
 export const Route = createFileRoute("/marketplace")({
   validateSearch: (search: Record<string, unknown>): MarketplaceSearch => {
+    let rawSupplierIds: string[] = [];
+    if (Array.isArray(search.supplierIds)) {
+      rawSupplierIds = search.supplierIds.map(String).filter((x) => x && x !== "[]");
+    } else if (typeof search.supplierIds === "string" && search.supplierIds.trim()) {
+      const s = search.supplierIds.trim();
+      if (s === "[]" || s === "" || s === "%5B%5D") {
+        rawSupplierIds = [];
+      } else if (s.startsWith("[") && s.endsWith("]")) {
+        try {
+          const parsed = JSON.parse(s);
+          rawSupplierIds = Array.isArray(parsed) ? parsed.map(String).filter((x) => x && x !== "[]") : [];
+        } catch {
+          rawSupplierIds = [];
+        }
+      } else {
+        rawSupplierIds = s.split(",").map((x) => x.trim()).filter((x) => x && x !== "[]");
+      }
+    }
+
     return {
       material: typeof search.material === "string" ? search.material : "All",
       query: typeof search.query === "string" ? search.query : "",
       maxPrice: search.maxPrice ? Number(search.maxPrice) : 3500,
       maxMoq: search.maxMoq ? Number(search.maxMoq) : 500,
-      supplierIds: Array.isArray(search.supplierIds)
-        ? (search.supplierIds as string[])
-        : typeof search.supplierIds === "string" && search.supplierIds
-        ? (search.supplierIds as string).split(",")
-        : [],
+      supplierIds: rawSupplierIds,
       sustainableOnly: Boolean(search.sustainableOnly),
       view: (search.view as "grid" | "list") || "grid",
       visible: search.visible ? Number(search.visible) : 8,
@@ -91,22 +106,21 @@ function Marketplace() {
     ]).then(([allProds, activeSups]) => {
       const activeSupIds = activeSups.map((s) => s.id);
       const filteredProds = allProds.filter((p) => activeSupIds.includes(p.supplierId));
-      setProductsList(filteredProds);
+      setProductsList(filteredProds.length > 0 ? filteredProds : allProds);
       setLoading(false);
     });
   }, []);
 
   const filtered = productsList.filter((p) => {
-    if (material !== "All" && p.material !== material) return false;
+    if (material && material !== "All" && p.material.toLowerCase() !== material.toLowerCase()) return false;
     if (p.pricePerMetre > maxPrice) return false;
     if (p.moq > maxMoq) return false;
-    if (supplierIds.length && !supplierIds.includes(p.supplierId)) return false;
+    if (supplierIds && supplierIds.length > 0 && !supplierIds.includes(p.supplierId)) return false;
     if (sustainableOnly && !p.sustainable) return false;
     
-    if (query) {
+    if (query && query.trim()) {
       const searchTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
-      const textToSearch = `${p.name} ${p.composition} ${p.material} ${p.tags.join(" ")}`.toLowerCase();
-      // Ensure all search terms are found in the product text details
+      const textToSearch = `${p.name} ${p.composition} ${p.material} ${p.subtitle || ""} ${(p.tags || []).join(" ")}`.toLowerCase();
       const matchesAllTerms = searchTerms.every((term) => textToSearch.includes(term));
       if (!matchesAllTerms) return false;
     }
